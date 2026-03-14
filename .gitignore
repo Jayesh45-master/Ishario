@@ -17,3 +17,10 @@ model.h5.bak
 Thumbs.db
 .vscode/
 
+# Local tool dirs / shell leftovers (do not commit)
+.anaconda/
+.antigravity/
+.bun/
+.bash_history
+.bash_profile
+*-windows.xml
