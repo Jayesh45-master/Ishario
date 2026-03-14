@@ -2,10 +2,7 @@
 
 archive/
 
-# Ignore model files
 
-model.h5
-model.h5.bak
 
 # Ignore environment variables
 
