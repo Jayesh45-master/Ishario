@@ -12,6 +12,10 @@ model.h5
 model.h5.bak
 *.keras
 
+# Allow committing the current checked-in model artifacts (explicit request)
+!model.h5
+!model.h5.bak
+
 # OS/editor
 .DS_Store
 Thumbs.db
