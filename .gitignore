@@ -1,0 +1,30 @@
+# Ignore archive folder
+
+archive/
+
+# Ignore model files
+
+model.h5
+model.h5.bak
+
+# Ignore environment variables
+
+.env
+
+# Python cache
+
+**pycache**/
+*.pyc
+
+# Flask session files
+
+flask_session/
+
+# VS Code settings
+
+.vscode/
+
+# OS files
+
+.DS_Store
+Thumbs.db

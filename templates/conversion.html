@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Sign Language Translator</title>
+    <!-- Tailwind CSS CDN for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8fc;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f0e6ff, #ffffff, #e6ffe6);
+        }
+
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .conversion-box-card {
+            background-color: white;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .sign-output-container {
+            min-height: 200px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            overflow-x: auto;
+            border: 1px solid #dcdcdc;
+            width: 100%;
+        }
+
+        #transcriptionOutput {
+            background-color: #f7f3ff;
+            border-left: 5px solid #8a2be2;
+            text-align: left;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .btn-convert {
+            background-color: #007bff;
+            color: white;
+            font-weight: 600;
+            padding: 10px 30px;
+            border-radius: 8px;
+            transition: background-color 0.2s, transform 0.2s;
+            margin-top: 25px;
+        }
+        .btn-convert:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        #signInputFile {
+            display: none;
+        }
+
+        .file-input-mockup {
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+        }
+
+        .file-input-button {
+            background-color: #8a2be2;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(138, 43, 226, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(138, 43, 226, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(138, 43, 226, 0); }
+        }
+
+        .is-scanning {
+            animation: pulse 1.5s infinite;
+        }
+
+        .tab-button {
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-active {
+            color: #8a2be2;
+            border-color: #8a2be2;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <script>
+        window.appState = {
+            inputText: '',
+            transcriptionText: 'Transcription will appear here...',
+            mockFileName: 'No file chosen',
+            currentMode: 'textToSign', // New state: 'textToSign' or 'signToText'
+        };
+
+        window.alert = (message) => {
+            const alertBox = document.createElement('div');
+            alertBox.textContent = message;
+            alertBox.className = 'fixed bottom-4 right-4 p-4 rounded-lg text-white bg-purple-600 shadow-xl z-50 transition-all duration-300';
+            document.body.appendChild(alertBox);
+
+            setTimeout(() => {
+                alertBox.remove();
+            }, 3000);
+        };
+
+        window.switchConversionMode = (mode) => {
+            window.appState.currentMode = mode;
+
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('tab-active');
+            });
+            document.getElementById(`tab-${mode}`).classList.add('tab-active');
+
+            document.getElementById('textToSignSection').classList.add('hidden');
+            document.getElementById('signToTextSection').classList.add('hidden');
+            document.getElementById(`${mode}Section`).classList.remove('hidden');
+        };
+
+        window.handleTextToSign = () => {
+            const textInput = document.getElementById('textInput').value;
+            window.appState.inputText = textInput;
+            const signOutputContainer = document.getElementById('signOutput');
+            const convertButton = document.getElementById('textToSignBtn');
+            
+            const text = textInput.toLowerCase().trim();
+            if (text.length < 2) {
+                signOutputContainer.innerHTML = `<p class="text-gray-600 text-center w-full">Please enter some text to convert.</p>`;
+                return;
+            }
+
+            signOutputContainer.classList.add('is-scanning');
+            convertButton.disabled = true;
+            convertButton.textContent = 'Scanning...';
+            signOutputContainer.innerHTML = `<p class="text-gray-600 text-center w-full flex items-center justify-center text-lg"><i class="fas fa-magic fa-spin mr-3"></i> Translating...</p>`;
+
+            fetch('/text-to-sign', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: textInput }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                signOutputContainer.classList.remove('is-scanning');
+                convertButton.disabled = false;
+                convertButton.textContent = 'Convert';
+
+                if (data.images && data.images.length > 0) {
+                    let outputHtml = '';
+                    data.images.forEach(image => {
+                        outputHtml += `
+                            <div class="inline-flex flex-col items-center m-2 flex-shrink-0">
+                                <img src="static/signs/${image}" 
+                                     alt="${image}" 
+                                     class="w-24 h-24 rounded-lg shadow-md mb-1 border border-purple-300">
+                                <span class="text-sm font-medium text-gray-700 capitalize">${image.split('.')[0]}</span>
+                            </div>
+                        `;
+                    });
+                    signOutputContainer.innerHTML = `<div class="flex flex-nowrap h-full">${outputHtml}</div>`;
+                    window.alert(`Conversion successful! Displaying ${data.images.length} signs.`);
+                } else {
+                    signOutputContainer.innerHTML = `<p class="text-red-500 font-semibold text-center w-full">${data.error}</p>`;
+                }
+            });
+        };
+
+        window.handleSignToText = () => {
+            const files = document.getElementById('signInputFile').files;
+            const formData = new FormData();
+
+            if (files.length === 0) {
+                alert("Please choose a file to upload.");
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                formData.append("files", files[i]);
+            }
+
+            fetch('/signtotext', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.text) {
+                    document.getElementById('transcriptionOutput').textContent = data.text;
+                } else {
+                    document.getElementById('transcriptionOutput').textContent = data.error;
+                }
+            });
+        };
+
+        window.updateFileName = (event) => {
+            const input = event.target;
+            window.appState.mockFileName = input.files.length > 0 ? input.files[0].name : 'No file chosen';
+            document.getElementById('mockFileNameDisplay').textContent = window.appState.mockFileName;
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('transcriptionOutput').textContent = window.appState.transcriptionText;
+            document.getElementById('signOutput').innerHTML = `<p class="text-gray-600 text-center w-full">Converted sign images/GIFs will appear here.</p>`;
+            
+            switchConversionMode('textToSign');
+        });
+    </script>
+
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+                        <i class="fas fa-book-open mr-2"></i>
+                        Ishario 
+                    </button>
+                </div>
+                <div class="flex items-center space-x-4 text-xl text-gray-400">
+                    <button onclick="window.location.href='/dashboard'" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                        <i class="fas fa-arrow-left mr-1"></i> Dashboard
+                    </button>
+                    <div class="flex items-center space-x-4 text-xl text-gray-400">
+                        <i class="fas fa-user-circle cursor-pointer hover:text-purple-600" onclick="navigateTo('profile')"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-2 text-center">
+            Sign Language Translator
+        </h1>
+        <p class="text-gray-500 mb-10 text-center">The fastest way to translate between written language and sign language sequences.</p>
+
+        <div class="flex justify-center space-x-6 mb-8 border-b border-gray-200">
+            <button id="tab-textToSign" onclick="switchConversionMode('textToSign')" class="tab-button text-lg text-gray-600 py-2 px-4">
+                Text to Sign
+            </button>
+            <button id="tab-signToText" onclick="switchConversionMode('signToText')" class="tab-button text-lg text-gray-600 py-2 px-4">
+                Sign to Text
+            </button>
+        </div>
+
+        <div class="flex justify-center">
+            <div id="textToSignSection" class="conversion-box-card">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Text to Sign Conversion</h2>
+                <textarea id="textInput" rows="4" placeholder="Type text here..." class="w-full p-3 mb-4 resize-none border border-gray-300 rounded-lg focus:border-purple-500 focus:ring-1 focus:ring-purple-500"></textarea>
+                <div id="signOutput" class="sign-output-container"></div>
+                <button onclick="handleTextToSign()" id="textToSignBtn" class="btn-convert">Convert</button>
+            </div>
+
+            <div id="signToTextSection" class="conversion-box-card hidden">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Sign to Text Recognition</h2>
+                <div class="w-full mb-4">
+                    <label for="signInputFile" class="flex items-center border border-gray-300 rounded-lg p-2 file-input-mockup cursor-pointer transition duration-150">
+                        <span class="file-input-button text-white px-4 py-1 rounded-md text-sm font-medium mr-3 hover:bg-purple-700">Choose File</span>
+                        <span id="mockFileNameDisplay" class="text-gray-500 overflow-hidden whitespace-nowrap text-ellipsis">No file chosen</span>
+                        <input type="file" id="signInputFile" accept="image/*" onchange="updateFileName(event)" multiple>
+                    </label>
+                </div>
+                <div id="transcriptionOutput" class="conversion-box w-full p-4 rounded-lg shadow-inner text-gray-700 text-left flex items-center justify-center">
+                    Transcription will appear here...
+                </div>
+                <button onclick="handleSignToText()" id="signToTextBtn" class="btn-convert">Convert</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

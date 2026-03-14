@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ishario Live Interaction</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <!-- MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: #f8f8fc;
+        margin: 0;
+      }
+
+      .card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+
+      .video-frame {
+        width: 100%;
+        height: 320px;
+        border-radius: 12px;
+        object-fit: cover;
+        transform: scaleX(-1);
+        background: #000;
+      }
+
+      .translation-box {
+        height: 200px;
+        border: 2px dashed #e2e2e2;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 600;
+        color: #8a2be2;
+        transition: border-color 0.3s ease, background-color 0.3s ease;
+      }
+
+      .translation-box.active {
+        border-color: #8a2be2;
+        background: #f3f0f9;
+      }
+
+      button {
+        transition: all 0.3s ease;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .header-section {
+        text-align: center;
+        margin-top: 40px;
+        margin-bottom: 30px;
+      }
+
+      .header-section h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      .header-section p {
+        color: #666;
+        font-size: 16px;
+      }
+
+      .navbar {
+        background: white;
+        padding: 15px 30px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .navbar-logo {
+        color: #8a2be2;
+        font-size: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+
+      .navbar-actions {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+      }
+
+      .navbar-actions i {
+        cursor: pointer;
+        font-size: 18px;
+        color: #555;
+        transition: color 0.3s ease;
+      }
+
+      .navbar-actions i:hover {
+        color: #8a2be2;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+      <div class="navbar-logo" onclick="navigateTo('/dashboard')">
+        <i class="fas fa-book-open"></i> Ishario
+      </div>
+
+      <div class="navbar-actions">
+        <i class="fas fa-home" onclick="navigateTo('/dashboard')"></i>
+        <i class="fas fa-user" onclick="navigateTo('/profile')"></i>
+        <i class="fas fa-sign-out-alt" onclick="navigateTo('/')"></i>
+      </div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="header-section">
+      <h1>Live Sign Interaction</h1>
+      <p>Perform sign gestures and get real-time translation.</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto mt-10 grid md:grid-cols-2 gap-10 px-6 pb-10">
+      <!-- Camera Feed Card -->
+      <div class="card p-6">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800">
+          <i class="fas fa-camera text-purple-500"></i> Camera Feed
+        </h2>
+
+        <video id="webcam" class="video-frame" autoplay playsinline></video>
+
+        <div class="flex gap-4 mt-6">
+          <button
+            onclick="startCamera()"
+            id="startBtn"
+            class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 font-semibold"
+          >
+            <i class="fas fa-play mr-2"></i>Start Camera
+          </button>
+
+          <button
+            onclick="stopCamera()"
+            id="stopBtn"
+            disabled
+            class="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 font-semibold"
+          >
+            <i class="fas fa-stop mr-2"></i>Stop Camera
+          </button>
+        </div>
+
+        <div class="mt-4 text-xs text-gray-500">
+          <i class="fas fa-info-circle"></i> Camera access is required for
+          real-time translation
+        </div>
+      </div>
+
+      <!-- Translation Output Card -->
+      <div class="card p-6">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800">
+          <i class="fas fa-language text-green-500"></i> Live Translation
+        </h2>
+
+        <div id="translationBox" class="translation-box">
+          Waiting for gesture...
+        </div>
+
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+          <p class="text-sm font-semibold">Supported Signs:</p>
+          <p class="text-sm text-gray-600">
+            Hello, Thank You, Yes, No, Help, Good, Goodbye, Please
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Global variables
+      let stream;
+      let camera;
+      let hands;
+
+      /**
+       * Navigate to a specified route
+       * @param {string} route - The route to navigate to
+       */
+      function navigateTo(route) {
+        window.location.href = route;
+      }
+
+      /**
+       * Start the camera and initialize hand tracking
+       */
+      function startCamera() {
+        const video = document.getElementById("webcam");
+
+        navigator.mediaDevices
+          .getUserMedia({ video: true })
+          .then(function (cam) {
+            stream = cam;
+            video.srcObject = stream;
+
+            document.getElementById("startBtn").disabled = true;
+            document.getElementById("stopBtn").disabled = false;
+
+            initHandTracking();
+          })
+          .catch(function (err) {
+            console.log(err);
+            updateTranslationBox("Camera access denied");
+          });
+      }
+
+      /**
+       * Stop the camera and clean up resources
+       */
+      function stopCamera() {
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+        }
+
+        if (camera) {
+          camera.stop();
+        }
+
+        document.getElementById("webcam").srcObject = null;
+
+        document.getElementById("startBtn").disabled = false;
+        document.getElementById("stopBtn").disabled = true;
+
+        updateTranslationBox("Waiting for gesture...");
+      }
+
+      /**
+       * Initialize hand tracking with MediaPipe
+       */
+      function initHandTracking() {
+        const video = document.getElementById("webcam");
+
+        if (!video) {
+          console.error("Video element not found");
+          updateTranslationBox("Error: Video element not found");
+          return;
+        }
+
+        try {
+          hands = new Hands({
+            locateFile: (file) => {
+              return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            },
+          });
+
+          hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.6,
+          });
+
+          hands.onResults(onResults);
+
+          camera = new Camera(video, {
+            onFrame: async () => {
+              if (hands) {
+                await hands.send({ image: video });
+              }
+            },
+            width: 640,
+            height: 480,
+          });
+
+          camera.start();
+          console.log("Hand tracking initialized successfully");
+        } catch (error) {
+          console.error("Failed to initialize hand tracking:", error);
+          updateTranslationBox("Failed to initialize hand tracking");
+        }
+      }
+
+      /**
+       * Handle hand detection results
+       * @param {Object} results - The detection results from MediaPipe
+       */
+      function onResults(results) {
+        if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+          updateTranslationBox("No Hand Detected");
+          return;
+        }
+
+        const lm = results.multiHandLandmarks[0];
+
+        if (!lm || lm.length === 0) {
+          updateTranslationBox("No Hand Detected");
+          return;
+        }
+
+        const gesture = detectGesture(lm);
+
+        updateTranslationBox(gesture);
+      }
+
+      /**
+       * Detect gesture from hand landmarks
+       * @param {Array} lm - Array of hand landmarks
+       * @returns {string} - The detected gesture name
+       */
+      function detectGesture(lm) {
+        // Validate input
+        if (!lm || lm.length < 21) {
+          return "Invalid Hand";
+        }
+
+        try {
+          const index = lm[8].y;
+          const middle = lm[12].y;
+          const ring = lm[16].y;
+          const pinky = lm[20].y;
+
+          if (index < middle && middle < ring) {
+            return "Hello";
+          }
+
+          if (index < lm[6].y && middle > lm[10].y) {
+            return "Yes";
+          }
+
+          if (index > lm[6].y && middle > lm[10].y) {
+            return "No";
+          }
+
+          if (lm[4].x > lm[3].x) {
+            return "Good";
+          }
+
+          return "Detecting...";
+        } catch (error) {
+          console.error("Error in detectGesture:", error);
+          return "Error";
+        }
+      }
+
+      /**
+       * Update the translation box with gesture text
+       * @param {string} text - The text to display
+       */
+      function updateTranslationBox(text) {
+        const box = document.getElementById("translationBox");
+
+        box.innerText = text;
+        box.classList.add("active");
+
+        setTimeout(() => {
+          box.classList.remove("active");
+        }, 400);
+      }
+    </script>
+  </body>
+</html>

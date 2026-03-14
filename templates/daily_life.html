@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Level 2: Daily Life</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8fc;
+            min-height: 100vh;
+        }
+
+        /* Gradient Text Style for Ishario Logo */
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Active Tab Styling */
+        .tab-active {
+            background-color: #8a2be2; /* Blue for Intermediate */
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Sign Card Styling */
+        .sign-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            @apply rounded-xl shadow-lg border border-gray-100; 
+        }
+        .sign-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mock GIF/Image Placeholder */
+        .sign-image-placeholder {
+            width: 100%;
+            height: 200px; /* Taller for phrases/gifs */
+            object-fit: contain;
+            background-color: #e6f7ff; /* Light Blue/Intermediate Theme */
+            border-radius: 8px;
+        }
+
+        /* Download Disabled Styling */
+        .btn-download-disabled {
+            @apply bg-gray-300 text-gray-600 cursor-not-allowed;
+        }
+
+        /* --- UPDATED PRINT STYLES for PDF Generation (Cheat Sheet) --- */
+        @media print {
+            /* Hide non-essential elements for a clean PDF */
+            nav, 
+            .w-full.md\:w-64.flex-shrink-0, /* Hide the entire sidebar */
+            .fa-heart, 
+            button {
+                display: none !important;
+            }
+            body { 
+                background-color: white; 
+            }
+            
+            /* Force main layout to full-width and remove margins */
+            .max-w-7xl, .flex-grow {
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                flex-direction: column !important;
+            }
+            
+            /* Ensure sign cards look good in the printout */
+            .sign-card {
+                box-shadow: none !important;
+                border: 1px solid #eee;
+                margin: 5px;
+            }
+            
+            /* Style for the Main Title */
+            #contentTitle { 
+                text-align: center; 
+                margin-top: 10px; 
+                margin-bottom: 20px; 
+                /* Optionally adjust font size for print legibility */
+            }
+            
+            /* Enforce the desired 4-column grid layout for print */
+            #contentGrid {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr); /* 4 columns for a denser cheat sheet */
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <script>
+        // --- Default Mock Data Structure for Daily Life (Level 2) ---
+        const defaultDailyContent = {
+            greetings: {
+                title: "Greetings & Introductions",
+                items: [
+                    // UPDATED IMAGE PATHS
+                    { id: 'g1', name: 'Hello', type: 'Phrase', isFavorite: false, imageUrl: 'static/signs/hello.png', category: 'Greetings' },
+                    { id: 'g2', name: 'Good ', type: 'Phrase', isFavorite: false, imageUrl: 'static/signs/good.png', category: 'Greetings' },
+                    { id: 'g3', name: 'Morning', type: 'Phrase', isFavorite: false, imageUrl: 'static/signs/morning.png', category: 'Greetings' },
+                    { id: 'g4', name: 'Afternoon', type: 'Phrase', isFavorite: false, imageUrl: 'static/signs/afternoon.png', category: 'Greetings' },
+                    { id: 'g5', name: 'Night', type: 'Phrase', isFavorite: false, imageUrl: 'static/signs/night.png', category: 'Greetings' },
+                    { id: 'g7', name: 'Yes', type: 'Phrase', isFavorite: false, imageUrl: 'static/signs/yes.png', category: 'Greetings' },
+                    { id: 'g8', name: 'No', type: 'Phrase', isFavorite: false, imageUrl: 'static/signs/no.png', category: 'Greetings' },
+                ]
+            },
+            phrases: {
+                title: "Common Phrases",
+                items: [
+                    // UPDATED IMAGE PATHS
+                    { id: 'p1', name: 'Thank You', type: 'Phrase', isFavorite: false, imageUrl: 'static/signs/Thankyou.png', category: 'Phrases' },
+                    { id: 'p2', name: 'Please', type: 'Phrase', isFavorite: false, imageUrl: 'static/signs/please.png', category: 'Phrases' },
+                    { id: 'p3', name: 'Excuse me', type: 'Phrase', isFavorite: false, imageUrl: 'static/signs/excuse me.png', category: 'Phrases' },
+                    { id: 'p4', name: 'Sorry', type: 'Sentence', isFavorite: false, imageUrl: 'static/signs/sorry.png', category: 'Phrases' },
+                    { id: 'p5', name: 'Welcome', type: 'Sentence', isFavorite: false, imageUrl: 'static/signs/welcome.png', category: 'Phrases' },
+                    { id: 'p6', name: 'AllDone', type: 'Sentence', isFavorite: false, imageUrl: 'static/signs/Alldone.png', category: 'Phrases' },
+                ]
+            },
+            words: {
+                title: "Daily Words",
+                items: [
+                    // UPDATED IMAGE PATHS
+                    { id: 'w1', name: 'Water', type: 'Word', isFavorite: false, imageUrl: 'static/signs/Water.jpg', category: 'Words' },
+                    { id: 'w2', name: 'Food', type: 'Word', isFavorite: false, imageUrl: 'static/signs/food.png', category: 'Words' },
+                    { id: 'w3', name: 'Home', type: 'Word', isFavorite: false, imageUrl: 'static/signs/home.png', category: 'Words' },
+                    { id: 'w4', name: 'Sleep', type: 'Word', isFavorite: false, imageUrl: 'static/signs/sleep.png', category: 'Words' },
+                    { id: 'w6', name: 'Eat', type: 'Word', isFavorite: false, imageUrl: 'static/signs/eat.png', category: 'Words' },
+                ]
+            }
+        };
+
+        // --- State Initialization and Persistence ---
+        let dailyContent;
+        const storageKey = 'isharioDailyContent';
+        let isComplete = false; 
+        const completionKey = 'level2Complete'; 
+
+        const loadState = () => {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                try {
+                    const storedContent = JSON.parse(stored);
+                    dailyContent = {...defaultDailyContent};
+                    
+                    for(const key in defaultDailyContent) {
+                        if (storedContent[key] && storedContent[key].items) {
+                            dailyContent[key].items.forEach((defaultItem) => {
+                                const storedItem = storedContent[key].items.find(si => si.id === defaultItem.id);
+                                if (storedItem) {
+                                    defaultItem.isFavorite = storedItem.isFavorite; 
+                                }
+                            });
+                        }
+                    }
+
+                } catch (e) {
+                    console.error("Error parsing stored daily content, using default.", e);
+                    dailyContent = defaultDailyContent;
+                }
+            } else {
+                dailyContent = defaultDailyContent;
+            }
+            
+            isComplete = localStorage.getItem(completionKey) === 'true';
+        };
+
+        const saveState = () => {
+            localStorage.setItem(storageKey, JSON.stringify(dailyContent));
+        };
+        
+        const saveCompletionStatus = () => {
+            localStorage.setItem(completionKey, isComplete);
+        }
+
+        let activeSection = 'greetings';
+
+        window.navigateTo = (page) => {
+            // FIX: Changed navigation to use a relative path (e.g., /dashboard) 
+            // instead of hardcoding the .html extension. This is necessary for 
+            // navigation to work correctly with Python frameworks like Flask.
+            console.log(`Navigating to /${page}`); 
+            window.location.href = `/${page}`;
+        };
+        
+        window.alert = (message) => {
+            const alertBox = document.createElement('div');
+            alertBox.textContent = message;
+            alertBox.className = 'fixed bottom-4 right-4 p-4 rounded-lg text-white bg-purple-600 shadow-xl z-50 transition-all duration-300';
+            document.body.appendChild(alertBox);
+
+            setTimeout(() => {
+                alertBox.remove();
+            }, 3000);
+        };
+        
+        window.switchSection = (sectionName) => {
+            activeSection = sectionName;
+            renderContent();
+            updateTabStyling();
+        };
+
+        window.toggleFavorite = (itemId, itemType) => {
+            let sectionKey = Object.keys(dailyContent).find(key => 
+                dailyContent[key].items.some(i => i.id === itemId)
+            );
+            
+            if (!sectionKey) return;
+
+            const sectionData = dailyContent[sectionKey];
+            const itemIndex = sectionData.items.findIndex(i => i.id === itemId);
+            if (itemIndex === -1) return;
+
+            const currentStatus = sectionData.items[itemIndex].isFavorite;
+            dailyContent[sectionKey].items[itemIndex].isFavorite = !currentStatus;
+
+            saveState();
+
+            const status = !currentStatus ? "added to" : "removed from";
+            window.alert(`${itemType} "${sectionData.items[itemIndex].name}" ${status} favorites`);
+
+            renderContent();
+        };
+        
+        window.generatePDF = () => {
+            if (isComplete) {
+                // Inform the user how to save the PDF
+                window.alert("Please use your browser's Print dialog (Ctrl+P / Cmd+P) and select 'Save as PDF'.");
+                
+                // Trigger the browser's native print dialogue
+                window.print();
+
+            } else {
+                window.alert("Please mark the section as COMPLETE before downloading notes.", false);
+            }
+        };
+
+        window.markComplete = () => {
+            isComplete = true;
+            saveCompletionStatus();
+            window.alert("Level 2 marked as COMPLETE! You can now download the PDF notes.");
+            updateCompletionButtons(); 
+        }
+
+        const updateCompletionButtons = () => {
+            const completeButton = document.getElementById('completeButton');
+            const downloadButton = document.getElementById('downloadButton');
+            
+            if (isComplete) {
+                completeButton.classList.add('bg-green-500', 'hover:bg-green-600');
+                completeButton.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+                completeButton.textContent = "Completed! 🎉";
+                completeButton.disabled = true;
+                
+                downloadButton.classList.remove('btn-download-disabled');
+                downloadButton.classList.add('bg-purple-600', 'hover:bg-purple-700');
+            } else {
+                completeButton.classList.remove('bg-green-500', 'hover:bg-green-600');
+                completeButton.classList.add('bg-purple-500', 'hover:bg-purple-600');
+                completeButton.textContent = "Mark as Complete";
+                completeButton.disabled = false;
+                
+                downloadButton.classList.add('btn-download-disabled');
+                downloadButton.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+            }
+        }
+        
+        const renderContent = () => {
+            const container = document.getElementById('contentGrid');
+            const data = dailyContent[activeSection];
+
+            document.getElementById('contentTitle').textContent = data.title;
+            
+            const cardsHtml = data.items.map(item => `
+                <div class="sign-card bg-white rounded-xl shadow-lg border border-gray-100 p-4 flex flex-col justify-between">
+                    <div class="mb-4">
+                        <img src="${item.imageUrl}" 
+                            alt="Sign for ${item.name}" 
+                            class="sign-image-placeholder"
+                            onerror="this.onerror=null; this.src='https://placehold.co/300x200/007bff/ffffff?text=${item.name.replace(/[^a-zA-Z0-9]/g, '+')}'">
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-2">
+                        <div>
+                            <p class="text-xs text-gray-500">${item.type} Sign</p>
+                            <h4 class="text-xl font-extrabold text-gray-800">${item.name}</h4>
+                        </div>
+                        <button onclick="toggleFavorite('${item.id}', '${item.type}')" 
+                                class="text-2xl text-gray-400 transition duration-150">
+                            <i class="${item.isFavorite ? 'fas text-red-500' : 'far'} fa-heart hover:text-red-400"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = cardsHtml;
+        };
+        
+        const updateTabStyling = () => {
+            document.querySelectorAll('.learning-tab').forEach(tab => {
+                if (tab.id === `tab-${activeSection}`) {
+                    tab.classList.add('tab-active');
+                } else {
+                    tab.classList.remove('tab-active');
+                }
+            });
+            
+        };
+ 
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState(); 
+            renderContent();
+            updateTabStyling();
+            updateCompletionButtons(); 
+        });
+    </script>
+
+
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+                        <i class="fas fa-book-open mr-2"></i>
+                        Ishario 
+                    </button>
+                </div>
+                
+                <div class="flex items-center space-x-4 text-xl text-gray-400">
+                    <button onclick="navigateTo('dashboard')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                        <i class="fas fa-arrow-left mr-1"></i> Dashboard
+                    </button>
+                   <div class="flex items-center space-x-4 text-xl text-gray-400">
+             <i class="fas fa-user-circle cursor-pointer hover:text-purple-600" onclick="navigateTo('profile')"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8">
+
+        <div class="w-full md:w-64 flex-shrink-0">
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 sticky top-20">
+                <span class="px-3 py-1 text-xs font-semibold rounded-full text-white bg-purple-600 mb-2 inline-block">Intermediate</span>
+                <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Level 2: Daily Life</h3>
+
+                <button id="tab-greetings" onclick="switchSection('greetings')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center tab-active">
+                    <i class="fas fa-handshake mr-3"></i> Greetings & Intros
+                </button>
+                <button id="tab-phrases" onclick="switchSection('phrases')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-comment-alt mr-3"></i> Common Phrases
+                </button>
+                <button id="tab-words" onclick="switchSection('words')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-utensils mr-3"></i> Daily Words
+                </button>
+            </div>
+            
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 mt-6 sticky top-[25rem]">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Resources & Completion</h3>
+                
+                <button id="completeButton" onclick="markComplete()" class="w-full py-2 mb-3 rounded-lg text-white font-semibold transition duration-200">
+                    Mark as Complete
+                </button>
+
+                <button id="downloadButton" onclick="generatePDF()" class="w-full py-2 rounded-lg font-semibold transition duration-200">
+                    <i class="fas fa-download mr-2"></i> Download Cheat Sheet (PDF)
+                </button>
+            </div>
+
+        </div>
+
+        <div class="flex-grow">
+            <h2 id="contentTitle" class="text-3xl font-bold text-gray-800 mb-6">Greetings & Introductions</h2>
+            
+            <div id="contentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            </div>
+
+        </div>
+
+    </div>
+</body>
+</html>

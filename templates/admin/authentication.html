@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ishario • Admin Sign In</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ishario: { primary: "#7C3AED", primaryLight: "#A78BFA", bg: "#F5F6FA", danger:"#EF4444" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-ishario-bg min-h-screen">
+  <header class="w-full bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
+      <div class="text-ishario-primary font-extrabold text-xl tracking-tight flex items-center gap-2">
+        <span class="inline-block w-6 h-6 rounded-md bg-ishario-primary"></span>
+        Ishario
+      </div>
+      <div class="ml-auto text-sm text-gray-500">Admin Console</div>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto mt-14 px-4">
+    <div class="bg-white rounded-2xl shadow-sm p-6">
+      <h1 class="text-2xl font-semibold">Welcome back, Admin 👋</h1>
+      <p class="text-gray-500 mt-1">Sign in to manage content, users and feedback.</p>
+
+      <form id="loginForm" class="mt-6 space-y-4" novalidate>
+        <div>
+          <label class="block text-sm font-medium mb-1">Email</label>
+          <input id="email" type="email" autocomplete="username"
+                 placeholder="admin@ishario.app"
+                 class="w-full rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ishario-primary/40" />
+          <p id="emailErr" class="hidden text-xs text-ishario-danger mt-1"></p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Password</label>
+          <div class="relative">
+            <input id="password" type="password" autocomplete="current-password"
+                   placeholder="••••••••"
+                   class="w-full rounded-xl border border-gray-200 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-ishario-primary/40" />
+            <button type="button" id="togglePwd"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Show</button>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">
+            Must be 8+ chars with upper, lower, number, and symbol.
+          </p>
+          <p id="pwdErr" class="hidden text-xs text-ishario-danger mt-1"></p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <label class="flex items-center gap-2 text-sm">
+            <input id="remember" type="checkbox" class="rounded" />
+            Remember me
+          </label>
+          <a href="#" class="text-sm text-ishario-primary hover:underline"
+             onclick="alert('Hook this to your server-side password reset flow.')">
+            Forgot password?
+          </a>
+        </div>
+
+        <button type="submit" id="loginform"
+                class="w-full bg-ishario-primary text-white font-medium rounded-xl py-2.5 hover:bg-purple-700 transition">
+          Sign In
+        </button>
+
+        <p id="formErr" class="hidden text-sm text-ishario-danger bg-red-50 border border-red-200 rounded-lg px-3 py-2"></p>
+      </form>
+
+      <p class="text-xs text-gray-400 mt-6">
+        Demo admin: <span class="font-medium">admin@ishario.app</span> / <span class="font-medium">Admin@12345</span>
+      </p>
+    </div>
+  </main>
+
+  <script>
+  // Show/hide password functionality
+  document.getElementById("togglePwd").addEventListener("click", () => {
+    const pwdField = document.getElementById("password");
+    pwdField.type = pwdField.type === "password" ? "text" : "password";
+    document.getElementById("togglePwd").textContent = pwdField.type === "password" ? "Show" : "Hide";
+  });
+
+  // Attach the submit event listener to the form
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();  // Prevent the default form submission
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    // Client-side validation
+    if (!email || !password) {
+      document.getElementById("formErr").textContent = "Please fill out both fields.";
+      document.getElementById("formErr").classList.remove("hidden");
+      return;
+    }
+
+    try {
+      // Send a POST request to /api/login with the form data
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Successfully logged in
+        document.getElementById("formErr").classList.add("hidden");
+        toast("Login successful!", "bg-green-600");
+        // Redirect to dashboard or any protected page
+        window.location.href = "/admin/keyfeatures";
+      } else {
+        // Handle invalid credentials
+        document.getElementById("formErr").textContent = data.error || "Login failed. Please try again.";
+        document.getElementById("formErr").classList.remove("hidden");
+      }
+
+    } catch (err) {
+      // If any error occurs in the login process
+      document.getElementById("formErr").textContent = "Error during login. Please try again.";
+      document.getElementById("formErr").classList.remove("hidden");
+    }
+  });
+
+  // Toast function to show messages
+  function toast(message, bgColor) {
+    const toastElement = document.createElement("div");
+    toastElement.className = `fixed bottom-6 right-6 ${bgColor} text-white px-4 py-2 rounded-xl shadow-lg`;
+    toastElement.textContent = message;
+    document.body.appendChild(toastElement);
+    setTimeout(() => toastElement.remove(), 2000);
+  }
+  </script>
+</body>
+</html>

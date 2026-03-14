@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Video Lectures</title>
+    <!-- Tailwind CSS CDN for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8fc;
+            min-height: 100vh;
+        }
+
+        /* Gradient Text Style for Ishario Logo */
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Responsive Iframe Container for 16:9 Aspect Ratio */
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 ratio */
+            border-radius: 0.75rem; /* rounded-xl equivalent */
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <!-- JavaScript Video Data and Navigation -->
+    <script>
+        // Simple mock navigation
+        function navigateTo(page) {
+            window.location.href = `/${page}`; 
+        }
+
+        const videoData = [
+            {
+                type: 'video',
+                title: 'Basic Sign Language: Alphabet & Numbers Overview',
+                id: 'RhQvlq-mZtA',
+                description: 'A dedicated video focusing on the fundamentals of the sign language alphabet and number system.',
+                level: 1,
+                source: 'https://youtu.be/RhQvlq-mZtA?si=BYkFi3dSUkEaX_yU'
+            },
+            {
+                type: 'video',
+                title: 'Daily Conversational Signs (Part 1)',
+                id: 'VtbYvVDItvg',
+                description: 'Practical signs and phrases for everyday use. Great for Level 2 learning.',
+                level: 2,
+                source: 'https://youtu.be/VtbYvVDItvg?si=0H4I_YETrHHVTsEd'
+            },
+            {
+                type: 'video',
+                title: 'Advanced Situational Signs (Emergency & Travel)',
+                id: 'Vj_13bdU4dU',
+                description: 'Focuses on complex signs needed for emergency and travel scenarios (Level 3 content).',
+                level: 3,
+                source: 'https://youtu.be/Vj_13bdU4dU?si=9dAGZWe3tvc73APu'
+            },
+            {
+                type: 'video',
+                title: 'ASL Grammar and Syntax Deep Dive',
+                id: 'aOL-yBRQHmM',
+                description: 'Explores the grammatical rules and sentence structure unique to sign language.',
+                level: 3,
+                source: 'https://youtu.be/aOL-yBRQHmM?si=uXzt06B82cxjv4p9'
+            },
+            {
+                type: 'video',
+                title: 'Common Misconceptions in Sign Language',
+                id: 'vN8WzD-ggsg',
+                description: 'Clears up common misunderstandings about sign languages around the world.',
+                level: 2,
+                source: 'https://youtu.be/vN8WzD-ggsg?si=AoEOZ_wovxRsrGFz'
+            },
+            {
+                type: 'video',
+                title: 'Understanding Facial Expressions (NMS)',
+                id: '5fHrZ-K255M',
+                description: 'Focus on Non-Manual Signals (NMS) and facial expressions—key parts of fluency.',
+                level: 3,
+                source: 'https://youtu.be/5fHrZ-K255M?si=3or5KX6P610FnjKn'
+            },
+            {
+                type: 'video',
+                title: 'Cultural Nuances in Sign Language',
+                id: 'qS2PoG0VL0I',
+                description: 'Learning the cultural context and etiquette associated with signing.',
+                level: 3,
+                source: 'https://youtu.be/qS2PoG0VL0I?si=r3dUKNEvoBHAklpc'
+            },
+            {
+                type: 'playlist',
+                title: 'Full Sign Language Series (Curated Playlist)',
+                id: 'PLxYMaKXKMMcMgg4f47WkG7AM0bb3AyjTi',
+                description: 'A comprehensive, multi-part series covering various aspects of sign language. **NOTE: Intro video is excluded as per request.**',
+                level: 1,
+                source: 'https://youtube.com/playlist?list=PLxYMaKXKMMcMgg4f47WkG7AM0bb3AyjTi&si=FD9Jo-E_gxr6il77'
+            }
+        ];
+
+        // Function to render the video player or playlist
+        function renderVideo() {
+            const container = document.getElementById('videoContent');
+            
+            // Clear previous content
+            container.innerHTML = ''; 
+
+            let html = '';
+
+            videoData.forEach(item => {
+                let embedUrl = '';
+                let note = '';
+                let badgeColor = '';
+                
+                if (item.type === 'video') {
+                    embedUrl = `https://www.youtube.com/embed/${item.id}`;
+                } else if (item.type === 'playlist') {
+                    // Embed URL for playlist, starting after index 0 (to exclude the intro)
+                    embedUrl = `https://www.youtube.com/embed/videoseries?list=${item.id}&index=2`;
+                    note = `<p class="text-xs text-red-500 mt-2"><i class="fas fa-exclamation-triangle mr-1"></i> Starting from video #2 (Intro excluded).</p>`;
+                }
+                
+                // Determine badge color based on level
+                if (item.level === 1) {
+                    badgeColor = 'bg-green-500';
+                } else if (item.level === 2) {
+                    badgeColor = 'bg-blue-500';
+                } else {
+                    badgeColor = 'bg-purple-500';
+                }
+                
+                html += `
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col">
+                        <div class="video-container mb-4">
+                            <iframe 
+                                src="${embedUrl}" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full text-white ${badgeColor} inline-block w-fit mb-2">Level ${item.level}</span>
+                        <h3 class="text-xl font-bold text-gray-800 mb-1">${item.title}</h3>
+                        <p class="text-sm text-gray-500">${item.description}</p>
+                        ${note}
+                        <a href="${item.source}" target="_blank" class="mt-4 text-sm font-semibold text-purple-600 hover:text-purple-800 transition duration-150 flex items-center">
+                            Watch on YouTube <i class="fas fa-external-link-alt ml-2 text-xs"></i>
+                        </a>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', renderVideo);
+    </script>
+
+
+    <!-- --- Top Navigation Bar (Ishario) --- -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <!-- Logo/Title: Ishario -->
+                <div class="flex-shrink-0 flex items-center">
+                    <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+                        <i class="fas fa-book-open mr-2"></i>
+                        Ishario 
+                    </button>
+                </div>
+                
+                <!-- Right Side: Navigation/User Icons -->
+                <div class="flex items-center space-x-4 text-xl text-gray-400">
+                    <button onclick="navigateTo('dashboard')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                        <i class="fas fa-arrow-left mr-1"></i> Dashboard
+                    </button>
+                    <div class="flex items-center space-x-4 text-xl text-gray-400">
+          <i class="fas fa-user-circle cursor-pointer hover:text-purple-600" onclick="navigateTo('profile')"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- --- Main Content Area --- -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Header -->
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-2">
+            Video Lectures 📺
+        </h1>
+        <p class="text-gray-500 mb-8">Curated tutorials to deepen your understanding of signs in context. These videos cover Level 1 to Level 3 topics.</p>
+
+        <!-- Video Grid -->
+        <div id="videoContent" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Videos will be injected here by JavaScript -->
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ishario • Admin • User Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ishario: { primary: "#7C3AED", primaryLight: "#A78BFA", bg: "#F5F6FA", danger:"#EF4444", ok:"#10B981" }
+          },
+          boxShadow: { soft: "0 8px 24px rgba(16,24,40,.06)" }
+        }
+      }
+    }
+  </script>
+  <style>
+    .badge{font-size:.675rem;padding:.15rem .5rem;border-radius:.5rem}
+  </style>
+</head>
+<body class="bg-ishario-bg min-h-screen">
+  <!-- Top Bar -->
+  <header class="w-full bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
+      <a href="./admin.html" class="text-ishario-primary font-extrabold text-xl tracking-tight flex items-center gap-2">
+        <span class="inline-block w-6 h-6 rounded-md bg-ishario-primary"></span> Ishario
+      </a>
+      <nav class="ml-auto flex items-center gap-4">
+        <span class="text-xs px-2 py-1 rounded-full bg-purple-100 text-ishario-primary">Admin</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 mt-8 mb-16">
+    <div class="flex items-end justify-between gap-3 flex-wrap">
+      <div>
+        <h1 class="text-2xl font-semibold">User Management</h1>
+        <p class="text-gray-500">View, edit, block/unblock, reset passwords, and delete users.</p>
+      </div>
+    
+    </div>
+
+    <!-- Users Table -->
+    <section class="bg-white rounded-2xl p-0 shadow-soft mt-4 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gray-50 text-left text-sm text-gray-600">
+            <tr>
+              <th class="px-4 py-3">Name</th>
+              <th class="px-4 py-3">Email</th>
+              <th class="px-4 py-3">Username</th>
+              <th class="px-4 py-3">Role</th>
+              <th class="px-4 py-3">Progress</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Last Login</th>
+              <th class="px-4 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody" class="text-sm">
+            <!-- Rows injected here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-between border-t px-4 py-3">
+        <div class="text-xs text-gray-500" id="pageInfo">—</div>
+        <div class="flex gap-2">
+          <button id="prevPage" class="px-3 py-1.5 rounded-lg border text-sm hover:bg-gray-50">Prev</button>
+          <button id="nextPage" class="px-3 py-1.5 rounded-lg border text-sm hover:bg-gray-50">Next</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Function to generate random progress between 0 to 100
+    function generateRandomProgress() {
+      return Math.floor(Math.random() * 101);  // Returns a number between 0 and 100
+    }
+
+    // Function to generate a random status (active or blocked)
+    function generateRandomStatus() {
+      const statuses = ['active', 'blocked'];
+      return statuses[Math.floor(Math.random() * statuses.length)];
+    }
+
+    // Function to generate a random last login date in the format 'MM/DD/YYYY'
+    function generateRandomLastLogin() {
+      const start = new Date(2018, 0, 1);  // Start date: 1st January 2018
+      const end = new Date();  // End date: current date
+      const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+      return randomDate.toLocaleDateString();  // Convert to MM/DD/YYYY format
+    }
+
+    // Fetch users and render them
+    async function fetchUsers() {
+      try {
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        if (data.users) {
+          renderUsers(data.users);
+        }
+      } catch (err) {
+        console.error('Error fetching users:', err);
+      }
+    }
+
+    // Render the users, fill missing fields with random data
+    function renderUsers(users) {
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = users.map(u => `
+        <tr class="border-t">
+          <td class="px-4 py-3">${u.name}</td>
+          <td class="px-4 py-3">${u.email}</td>
+          <td class="px-4 py-3">${u.username}</td>
+          <td class="px-4 py-3">${u.role}</td>
+          <td class="px-4 py-3">${u.progress !== 'undefined' ? u.progress + "%" : generateRandomProgress() + "%"}</td>
+          <td class="px-4 py-3">${u.status !== 'undefined' ? u.status : generateRandomStatus()}</td>
+          <td class="px-4 py-3">${u.last_login !== 'undefined' ? u.last_login : generateRandomLastLogin()}</td>
+          <td class="px-4 py-3">
+            <button class="px-2 py-1 text-xs rounded-lg bg-purple-600 text-white hover:bg-purple-700" onclick="editUser('${u.id}')">Edit</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Function to navigate to the user edit page
+    function editUser(userId) {
+      window.location.href = `/admin/edit-user/${userId}`;
+    }
+
+    // On page load, fetch and render users
+    window.onload = fetchUsers;
+  </script>
+
+</body>
+</html>

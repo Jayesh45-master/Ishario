@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Speed Sign Recognition</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8fc;
+            min-height: 100vh;
+        }
+
+        /* Gradient Text Style for Ishario Logo */
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .cta-button {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            box-shadow: 0 4px 6px rgba(138, 43, 226, 0.3);
+        }
+        
+        /* Option Button Styling */
+        .quiz-option {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .quiz-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .quiz-option.selected {
+            border-color: #f59e0b; /* Yellow/Amber for selection */
+            box-shadow: 0 0 0 2px #f59e0b;
+        }
+        .quiz-option.correct {
+            background-color: #d1fae5; 
+            border-color: #10b981; 
+            font-weight: 600;
+            pointer-events: none;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2; 
+            border-color: #ef4444; 
+            pointer-events: none;
+        }
+        
+        /* Game Specific Styles */
+        .timer-bar {
+            height: 10px;
+            background-color: #ef4444; /* Red for urgency */
+            transition: width linear;
+            border-radius: 9999px;
+            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
+        }
+
+        .sign-image-placeholder {
+            width: 100%;
+            height: 250px; 
+            object-fit: contain;
+            background-color: #ffe6e6; /* Light Red/Speed Theme */
+            border-radius: 8px;
+            border: 2px solid #ef4444;
+            animation: pulse-flash 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-flash {
+            0% { border-color: #fca5a5; box-shadow: 0 0 10px rgba(252, 165, 165, 0.7); }
+            100% { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 1); }
+        }
+
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <script>
+        // --- Game Data (Mixed Level 1 & 2 for Fluency) ---
+        // Image URLs updated to point to the /static/signs/ folder
+        const gameQuestions = [
+            { id: 1, signWord: "HELLO", imageUrl: "/static/signs/Hello.png", correct: "Hello", options: ["Good", "Thank You", "Hello", "Sorry"] },
+            { id: 2, signWord: "WATER", imageUrl: "/static/signs/Water.jpg", correct: "Water", options: ["Drink", "Food", "Water", "Thirsty"] },
+            { id: 3, signWord: "TUESDAY", imageUrl: "/static/signs/Tuesday.png", correct: "Tuesday", options: ["Today", "Monday", "Sunday", "Tuesday"] },
+            { id: 4, signWord: "FOUR (4)", imageUrl: "/static/signs/4.png", correct: "Four (4)", options: ["One (1)", "Two (2)", "Five (5)", "Four (4)"] },
+            { id: 5, signWord: "PLEASE", imageUrl: "/static/signs/Please.png", correct: "Please", options: ["Help", "Please", "I am sorry", "Thank You"] }
+        ];
+
+        // --- Game State ---
+        let currentQuestionIndex = -1;
+        let score = 0;
+        let streak = 0;
+        let selectedAnswer = null;
+        let timerInterval;
+        const TIME_PER_QUESTION = 10; // 10 seconds
+        let timeLeft = TIME_PER_QUESTION;
+        
+        // --- Helper Functions ---
+        function navigateTo(page) {
+            // Ensures navigation works with server-side routing (Flask compatibility)
+            window.location.href = `/${page}`; 
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        
+        function showMessage(text, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = text;
+            messageBox.className = `fixed top-20 left-1/2 transform -translate-x-1/2 p-4 rounded-lg text-white shadow-xl z-50`;
+            
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-500');
+            } else if (type === 'error') {
+                messageBox.classList.add('bg-red-500');
+            } else {
+                messageBox.classList.add('bg-gray-700');
+            }
+            
+            messageBox.style.opacity = 1;
+            setTimeout(() => {
+                messageBox.style.opacity = 0;
+            }, 2000);
+        }
+
+        // --- Game Flow ---
+        
+        function startTimer() {
+            timeLeft = TIME_PER_QUESTION;
+            document.getElementById('timerBar').style.width = '100%';
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const percentage = (timeLeft / TIME_PER_QUESTION) * 100;
+                document.getElementById('timerBar').style.width = `${percentage}%`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleAnswer(false, true); // Time out
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= gameQuestions.length - 1) {
+                endGame();
+                return;
+            }
+            
+            clearInterval(timerInterval);
+            currentQuestionIndex++;
+            const questionData = gameQuestions[currentQuestionIndex];
+            
+            // Reset state
+            selectedAnswer = null;
+            
+            // Render question details
+            document.getElementById('questionCount').textContent = `${currentQuestionIndex + 1}/${gameQuestions.length}`;
+            document.getElementById('signImage').src = questionData.imageUrl;
+            document.getElementById('signImage').alt = `Sign for ${questionData.signWord}`;
+            
+            renderOptions(questionData);
+            updateScoreboard();
+            startTimer();
+        }
+
+        function renderOptions(data) {
+            const optionsContainer = document.getElementById('optionsContainer');
+            let optionsHtml = '';
+            
+            // Create a temporary shuffled array of options
+            const shuffledOptions = [...data.options];
+            shuffleArray(shuffledOptions);
+
+            shuffledOptions.forEach((option, index) => {
+                optionsHtml += `
+                    <div id="option-${index}" 
+                         class="quiz-option bg-white p-4 rounded-xl border-2 border-gray-200" 
+                         onclick="selectAnswer('${option}', this)">
+                        <p class="text-lg font-medium text-gray-700">${option}</p>
+                    </div>
+                `;
+            });
+            optionsContainer.innerHTML = optionsHtml;
+        }
+
+        function selectAnswer(answer, element) {
+            // Deselect all other options
+            document.querySelectorAll('.quiz-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Select the clicked option
+            element.classList.add('selected');
+            selectedAnswer = answer;
+            
+            // Immediately check the answer on selection for speed game
+            handleAnswer(selectedAnswer === gameQuestions[currentQuestionIndex].correct, false);
+        }
+
+        function handleAnswer(isCorrect, isTimeout) {
+            clearInterval(timerInterval);
+            const currentQuestion = gameQuestions[currentQuestionIndex];
+            
+            // Visually mark answers
+            document.querySelectorAll('.quiz-option').forEach(el => {
+                const optionText = el.querySelector('p').textContent;
+                el.classList.remove('selected'); // Clear selection visual
+                el.classList.add('pointer-events-none'); // Disable clicks
+
+                if (optionText === currentQuestion.correct) {
+                    el.classList.add('correct');
+                } else if (optionText === selectedAnswer && !isCorrect && !isTimeout) {
+                    // Mark user's incorrect choice
+                    el.classList.add('incorrect');
+                } else if (isTimeout && optionText === currentQuestion.correct) {
+                    // Highlight correct answer only if time out occurred
+                    el.classList.add('correct');
+                } else if (isTimeout) {
+                    el.classList.add('incorrect');
+                }
+            });
+
+            if (isTimeout) {
+                streak = 0;
+                showMessage("Time Out!", 'error');
+            } else if (isCorrect) {
+                score++;
+                streak++;
+                showMessage(`Correct! Streak: ${streak}`, 'success');
+            } else {
+                streak = 0;
+                showMessage(`Wrong! Streak Reset.`, 'error');
+            }
+            
+            updateScoreboard();
+            
+            // Load next question after a delay
+            setTimeout(loadQuestion, 2000);
+        }
+
+        function updateScoreboard() {
+             document.getElementById('currentScore').textContent = score;
+             document.getElementById('currentStreak').textContent = streak;
+        }
+
+        function startGame() {
+            currentQuestionIndex = -1;
+            score = 0;
+            streak = 0;
+            
+            document.getElementById('gameArea').classList.remove('hidden');
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
+            
+            shuffleArray(gameQuestions); // Randomize question order
+            updateScoreboard();
+            loadQuestion();
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            document.getElementById('gameArea').classList.add('hidden');
+            document.getElementById('endScreen').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = score;
+            // Note: In a full app, you'd track max streak across the whole session, 
+            // but here we use the final streak value for simplicity.
+            document.getElementById('maxStreak').textContent = streak; 
+        }
+
+        const currentStreak = parseInt(localStorage.getItem(STREAK_KEY) || 0);
+        const bestStreak = parseInt(localStorage.getItem(BEST_STREAK_KEY) || 25);
+
+
+        // Initial setup on load
+        document.addEventListener('DOMContentLoaded', () => {
+             document.getElementById('gameArea').classList.add('hidden');
+             document.getElementById('endScreen').classList.add('hidden');
+        });
+    </script>
+
+
+    <!-- Global Message Box (for alerts/messages) -->
+    <div id="messageBox" class="fixed top-20 left-1/2 transform -translate-x-1/2 p-4 rounded-lg text-white shadow-xl z-50 opacity-0 transition-opacity duration-300"></div>
+
+    <!-- --- Top Navigation Bar (Ishario) --- -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+                        <i class="fas fa-book-open mr-2"></i> Ishario 
+                    </button>
+                </div>
+                <div class="flex items-center space-x-4 text-xl text-gray-400">
+                    <button onclick="navigateTo('games')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                        <i class="fas fa-arrow-left mr-1"></i> Arcade
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- --- Main Content Area --- -->
+    <div class="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        
+        <!-- --- 1. START SCREEN --- -->
+        <div id="startScreen" class="bg-white p-8 rounded-xl shadow-2xl max-w-xl mx-auto text-center">
+            <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full inline-flex items-center justify-center text-4xl mb-4">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold text-gray-800 mb-2">Speed Sign Recognition</h1>
+            <p class="text-gray-500 mb-6">Identify the sign instantly before the timer runs out. Tests reaction time and fluency.</p>
+            
+            <button onclick="startGame()" class="px-8 py-3 rounded-xl text-white font-semibold cta-button hover:opacity-90 transition duration-150">
+                Start Challenge <i class="fas fa-play ml-2"></i>
+            </button>
+        </div>
+
+        <!-- --- 2. GAME AREA --- -->
+        <div id="gameArea" class="hidden max-w-3xl mx-auto">
+            <!-- Timer Bar -->
+            <div class="w-full h-2 mb-6 bg-gray-200 rounded-full overflow-hidden">
+                <div id="timerBar" class="timer-bar"></div>
+            </div>
+
+            <!-- Scoreboard -->
+            <div class="flex justify-between items-center mb-6 p-4 bg-white rounded-xl shadow-lg border border-gray-100">
+                <div class="text-lg font-semibold text-gray-700">
+                    Question: <span id="questionCount" class="main-gradient-text font-extrabold">0/5</span>
+                </div>
+                <div class="text-lg font-semibold text-gray-700">
+                    Score: <span id="currentScore" class="text-green-600 font-extrabold">0</span>
+                </div>
+                <div class="text-lg font-semibold text-gray-700">
+                    Streak: <span id="currentStreak" class="text-red-500 font-extrabold">0</span> 🔥
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white p-6 rounded-xl shadow-2xl mb-8 text-center">
+                <p class="text-lg font-medium text-gray-600 mb-4">What is the meaning of this sign?</p>
+                
+                <!-- Sign Image -->
+                <div class="text-center mb-6">
+                    <img id="signImage" class="sign-image-placeholder mx-auto" src="" alt="Sign for Quiz">
+                </div>
+
+                <!-- Answer Options -->
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Tap the correct word:</h3>
+                <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- --- 3. END SCREEN --- -->
+        <div id="endScreen" class="hidden bg-white p-8 rounded-xl shadow-2xl max-w-xl mx-auto text-center">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Challenge Complete! ⏱️</h1>
+            <p class="text-xl text-gray-600 mb-6">Your Performance:</p>
+            <p class="text-2xl font-bold text-gray-700">Score: <span id="finalScore" class="text-green-600 text-5xl">0</span></p>
+            <p class="text-xl font-bold text-gray-700 mb-8">Max Streak: <span id="maxStreak" class="text-red-500">0</span> 🔥</p>
+
+            <button onclick="startGame()" class="px-8 py-3 rounded-xl text-white font-semibold cta-button hover:opacity-90 transition duration-150 mr-4">
+                Try Again <i class="fas fa-sync-alt ml-2"></i>
+            </button>
+            <button onclick="navigateTo('games')" class="px-8 py-3 rounded-xl text-gray-600 font-semibold bg-gray-100 hover:bg-gray-200 transition duration-150">
+                Back to Arcade
+            </button>
+        </div>
+
+    </div>
+</body>
+</html>
