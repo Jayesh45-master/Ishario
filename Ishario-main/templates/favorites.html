@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Favorites</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8fc;
+            min-height: 100vh;
+        }
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sign-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .sign-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .sign-image-placeholder {
+            min-height: 150px;
+            background-color: #e6e6fa;
+        }
+        .sign-image-placeholder img {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+<script>
+    const defaultLearningContent = {
+            alphabets: {
+                items: [
+                    { id: 'a', name: 'A', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'b', name: 'B', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'c', name: 'C', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'd', name: 'D', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'e', name: 'E', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'f', name: 'F', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'g', name: 'G', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'h', name: 'H', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'i', name: 'I', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'j', name: 'J', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'k', name: 'K', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'l', name: 'L', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'm', name: 'M', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'n', name: 'N', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'o', name: 'O', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'p', name: 'P', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'q', name: 'Q', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'r', name: 'R', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 's', name: 'S', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 't', name: 'T', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'u', name: 'U', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'v', name: 'V', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'w', name: 'W', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'x', name: 'X', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'y', name: 'Y', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                    { id: 'z', name: 'Z', type: 'Alphabet', isFavorite: false, category: 'Alphabets' },
+                ]
+            },
+            numbers: {
+                items: [
+                    { id: 'n1', name: 'One (1)', type: 'Number', isFavorite: false, category: 'Numbers' },
+                    { id: 'n2', name: 'Two (2)', type: 'Number', isFavorite: false, category: 'Numbers' },
+                    { id: 'n3', name: 'Three (3)', type: 'Number', isFavorite: false, category: 'Numbers' },
+                    { id: 'n4', name: 'Four (4)', type: 'Number', isFavorite: false, category: 'Numbers' },
+                    { id: 'n5', name: 'Five (5)', type: 'Number', isFavorite: false, category: 'Numbers' },
+                    { id: 'n6', name: 'Six (6)', type: 'Number', isFavorite: false, category: 'Numbers' },
+                    { id: 'n7', name: 'Seven (7)', type: 'Number', isFavorite: false, category: 'Numbers' },
+                    { id: 'n8', name: 'Eight (8)', type: 'Number', isFavorite: false, category: 'Numbers' },
+                    { id: 'n9', name: 'Nine (9)', type: 'Number', isFavorite: false, category: 'Numbers' },
+                    { id: 'n10', name: 'Ten (10)', type: 'Number', isFavorite: false, category: 'Numbers' },
+                ]
+            },
+            days: {
+                items: [
+                    { id: 'd1', name: 'Monday', type: 'Day', isFavorite: false, category: 'Days' },
+                    { id: 'd2', name: 'Tuesday', type: 'Day', isFavorite: false, category: 'Days' },
+                    { id: 'd3', name: 'Wednesday', type: 'Day', isFavorite: false, category: 'Days' },
+                    { id: 'd4', name: 'Thursday', type: 'Day', isFavorite: false, category: 'Days' },
+                    { id: 'd5', name: 'Friday', type: 'Day', isFavorite: false, category: 'Days' },
+                    { id: 'd6', name: 'Saturday', type: 'Day', isFavorite: false, category: 'Days' },
+                    { id: 'd7', name: 'Sunday', type: 'Day', isFavorite: false, category: 'Days' },
+                ]
+            },
+            months: {
+                items: [
+                    { id: 'm1', name: 'January', type: 'Month', isFavorite: false, category: 'Months' },
+                    { id: 'm2', name: 'February', type: 'Month', isFavorite: false, category: 'Months' },
+                    { id: 'm3', name: 'March', type: 'Month', isFavorite: false, category: 'Months' },
+                    { id: 'm4', name: 'April', type: 'Month', isFavorite: false, category: 'Months' },
+                    { id: 'm5', name: 'May', type: 'Month', isFavorite: false, category: 'Months' },
+                    { id: 'm6', name: 'June', type: 'Month', isFavorite: false, category: 'Months' },
+                    { id: 'm7', name: 'July', type: 'Month', isFavorite: false, category: 'Months'},
+                    { id: 'm8', name: 'August', type: 'Month', isFavorite: false, category: 'Months' },
+                    { id: 'm9', name: 'September', type: 'Month', isFavorite: false, category: 'Months' },
+                    { id: 'm10', name: 'October', type: 'Month', isFavorite: false, category: 'Months' },
+                    { id: 'm11', name: 'Novemeber', type: 'Month', isFavorite: false, category: 'Months' },
+                    { id: 'm12', name: 'December', type: 'Month', isFavorite: false, category: 'Months' },
+                ]
+            },
+        };
+
+    let learningContent;
+    const storageKey = 'isharioLearningContent';
+
+    const loadState = () => {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+            try {
+                const storedContent = JSON.parse(stored);
+                learningContent = {...defaultLearningContent};
+                for(const key in defaultLearningContent) {
+                    if (storedContent[key] && storedContent[key].items) {
+                        learningContent[key].items.forEach((defaultItem) => {
+                            const storedItem = storedContent[key].items.find(si => si.id === defaultItem.id);
+                            if (storedItem) defaultItem.isFavorite = storedItem.isFavorite;
+                        });
+                    }
+                }
+            } catch (e) { learningContent = defaultLearningContent; }
+        } else { learningContent = defaultLearningContent; }
+    };
+
+    const saveState = () => { localStorage.setItem(storageKey, JSON.stringify(learningContent)); };
+
+    window.navigateTo = (page) => { window.location.href = `/${page}`; };
+
+    const alertMessage = (message) => {
+        const alertBox = document.createElement('div');
+        alertBox.textContent = message;
+        alertBox.className = 'fixed bottom-4 right-4 p-4 rounded-lg text-white bg-purple-600 shadow-xl z-50 transition-all duration-300';
+        document.body.appendChild(alertBox);
+        setTimeout(() => alertBox.remove(), 3000);
+    };
+
+    window.toggleFavorite = (itemId, itemType) => {
+        let found = false;
+        for (const key in learningContent) {
+            const itemIndex = learningContent[key].items.findIndex(i => i.id === itemId);
+            if (itemIndex > -1) {
+                const currentStatus = learningContent[key].items[itemIndex].isFavorite;
+                learningContent[key].items[itemIndex].isFavorite = !currentStatus;
+                const status = !currentStatus ? "added to" : "removed from";
+                alertMessage(`${itemType} "${learningContent[key].items[itemIndex].name}" ${status} favorites`);
+                found = true;
+                break;
+            }
+        }
+        if (found) { saveState(); renderFavorites(); }
+    };
+
+    const getFavoriteItems = () => {
+        const favorites = [];
+        for (const key in learningContent) {
+            learningContent[key].items.forEach(item => {
+                if (item.isFavorite) favorites.push({...item, category: learningContent[key].items[0].category});
+            });
+        }
+        return favorites;
+    };
+
+    const renderFavorites = () => {
+        const container = document.getElementById('favoritesGrid');
+        const favoriteItems = getFavoriteItems();
+
+        if (favoriteItems.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-full text-center p-12 bg-white rounded-xl shadow-lg border border-gray-100">
+                    <i class="far fa-heart text-5xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600">No Favorites Yet!</h3>
+                    <p class="text-gray-500 mt-2">Go to the Dashboard and start bookmarking signs you want to practice.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const cardsHtml = favoriteItems.map(item => `
+            <div class="sign-card bg-white rounded-xl shadow-lg border border-gray-100 p-4 flex flex-col justify-between">
+                <span class="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-full absolute top-2 right-2">${item.category}</span>
+
+                <div class="sign-image-placeholder rounded-lg mb-4 flex items-center justify-center text-3xl text-purple-600 font-bold">
+                    <img src="/static/signs/${item.id}.png" onerror="this.style.display='none'; this.parentElement.textContent='${item.name}'" />
+                </div>
+                
+                <div class="flex justify-between items-center mt-2">
+                    <div>
+                        <p class="text-xs text-gray-500">${item.type} Sign</p>
+                        <h4 class="text-2xl font-extrabold text-gray-800">${item.name}</h4>
+                    </div>
+                    <button onclick="toggleFavorite('${item.id}', '${item.type}')" 
+                            class="text-2xl text-red-500 transition duration-150">
+                        <i class="fas fa-heart hover:text-red-400"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        container.innerHTML = cardsHtml;
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadState();
+        renderFavorites();
+    });
+</script>
+
+<nav class="bg-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            <div class="flex-shrink-0 flex items-center">
+                <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+                    <i class="fas fa-book-open mr-2"></i> Ishario 
+                </button>
+            </div>
+            <div class="flex items-center space-x-4 text-xl text-gray-400">
+                <button onclick="navigateTo('dashboard')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                    <i class="fas fa-arrow-left mr-1"></i> Dashboard
+                </button>
+                <div class="flex items-center space-x-4 text-xl text-gray-400">
+                    <i class="fas fa-user-circle cursor-pointer hover:text-purple-600" onclick="navigateTo('profile')"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex-grow">
+    <h1 class="text-3xl font-extrabold text-gray-800 mb-2">My Favorites ❤️</h1>
+    <p class="text-gray-500 mb-8">Quick access to all the words and signs you've bookmarked.</p>
+    <div id="favoritesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+</div>
+
+</body>
+</html>

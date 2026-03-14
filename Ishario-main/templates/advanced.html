@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Level 3: Advanced</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8fc;
+            min-height: 100vh;
+        }
+
+        /* Gradient Text Style for Ishario Logo */
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Active Tab Styling (Advanced/Purple Theme) */
+        .tab-active {
+            background-color: #8a2be2;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Sign Card Styling */
+        .sign-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            @apply rounded-xl shadow-lg border border-gray-100;
+        }
+        .sign-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mock GIF/Image Placeholder */
+        .sign-image-placeholder {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background-color: #e6e6fa; /* Light Lavender */
+            border-radius: 8px;
+            text-align: center;
+            line-height: 150px;
+            font-size: 0.8rem;
+            color: #4c4c4c;
+        }
+
+        /* Download Disabled Styling */
+        .btn-download-disabled {
+            @apply bg-gray-300 text-gray-600 cursor-not-allowed;
+        }
+
+        /* --- PRINT STYLES for PDF Generation (Cheat Sheet) --- */
+        @media print {
+            /* Hide non-essential elements for a clean PDF */
+            nav, 
+            .w-full.md\:w-64.flex-shrink-0, /* Hide the entire sidebar */
+            .fa-heart, 
+            button {
+                display: none !important;
+            }
+            body { 
+                background-color: white; 
+            }
+            
+            /* Force main layout to full-width and remove margins */
+            .max-w-7xl, .flex-grow {
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                flex-direction: column !important;
+            }
+            
+            /* Ensure sign cards look good in the printout */
+            .sign-card {
+                box-shadow: none !important;
+                border: 1px solid #eee;
+                margin: 5px;
+            }
+            
+            /* Style for the Main Title */
+            #contentTitle { 
+                text-align: center; 
+                margin-top: 10px; 
+                margin-bottom: 20px; 
+            }
+            
+            /* Enforce the desired 4-column grid layout for print */
+            #contentGrid {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr); /* 4 columns for a denser cheat sheet */
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <script>
+        // --- Default Mock Data Structure for Advanced Content ---
+        const defaultLearningContent = {
+            emergency: {
+                title: "Emergency & Medical Situations",
+                items: [
+                    { id: 'e1', name: 'Ambulance', type: 'Medical', isFavorite: false, imageUrl: '/static/signs/ambulance.png', category: 'Emergency' },
+                    { id: 'e2', name: 'Pain (where)', type: 'Medical', isFavorite: false, imageUrl: '/static/signs/Pain.png', category: 'Emergency' },
+                    { id: 'e3', name: 'Call Police', type: 'Emergency', isFavorite: false, imageUrl: '/static/signs/Police.png', category: 'Emergency' },
+                ]
+            },
+            healthcare: {
+                title: "Healthcare & Symptoms",
+                items: [
+                    { id: 'h1', name: 'Doctor', type: 'Healthcare', isFavorite: false, imageUrl: '/static/signs/doctor.png', category: 'Healthcare' },
+                    { id: 'h2', name: 'Hospital', type: 'Healthcare', isFavorite: false, imageUrl: '/static/signs/hospital.png', category: 'Healthcare' },
+                    { id: 'h4', name: 'Medicine', type: 'Healthcare', isFavorite: false, imageUrl: '/static/signs/medicine.png', category: 'Healthcare' },
+                ]
+            },
+            education: {
+                title: "Educational & Professional Topics",
+                items: [
+                    { id: 'u1', name: 'University', type: 'Education', isFavorite: false, imageUrl: '/static/signs/university.png', category: 'Education' },
+                    { id: 'u2', name: 'Interview', type: 'Professional', isFavorite: false, imageUrl: '/static/signs/interview.png', category: 'Education' },
+                    { id: 'u3', name: 'Job', type: 'Professional', isFavorite: false, imageUrl: '/static/signs/job.png', category: 'Education' },
+                ]
+            },
+            travel: {
+                title: "Travel & Directions",
+                items: [
+                    { id: 't1', name: 'Airport', type: 'Travel', isFavorite: false, imageUrl: '/static/signs/Airplane.png', category: 'Travel' },
+                    { id: 't3', name: 'Where is...', type: 'Direction', isFavorite: false, imageUrl: '/static/signs/where do.png', category: 'Travel' },
+                ]
+            },
+        };
+        // --- State Initialization and Persistence ---
+        let learningContent;
+        const storageKey = 'isharioAdvancedContent'; // Unique key for Level 3
+        let isComplete = false;
+        const completionKey = 'level3Complete';
+
+        const loadState = () => {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                try {
+                    const storedContent = JSON.parse(stored);
+                    learningContent = {...defaultLearningContent};
+                    
+                    for(const key in defaultLearningContent) {
+                        if (storedContent[key] && storedContent[key].items) {
+                            learningContent[key].items.forEach((defaultItem) => {
+                                const storedItem = storedContent[key].items.find(si => si.id === defaultItem.id);
+                                if (storedItem) {
+                                    defaultItem.isFavorite = storedItem.isFavorite; 
+                                }
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error parsing stored content, using default.", e);
+                    learningContent = defaultLearningContent;
+                }
+            } else {
+                learningContent = defaultLearningContent;
+            }
+            
+            // Load completion status
+            isComplete = localStorage.getItem(completionKey) === 'true';
+        };
+
+        const saveState = () => {
+            localStorage.setItem(storageKey, JSON.stringify(learningContent));
+        };
+
+        const saveCompletionStatus = () => {
+            localStorage.setItem(completionKey, isComplete);
+        }
+
+        // State and Functions
+        let activeSection = 'emergency'; 
+
+        window.navigateTo = (page) => {
+            // FIX APPLIED: Use relative path (e.g., /dashboard) for Flask routing compatibility
+            console.log(`Navigating to /${page}`); 
+            window.location.href = `/${page}`;
+        };
+        
+        window.alert = (message) => {
+            const alertBox = document.createElement('div');
+            alertBox.textContent = message;
+            alertBox.className = 'fixed bottom-4 right-4 p-4 rounded-lg text-white bg-purple-600 shadow-xl z-50 transition-all duration-300';
+            document.body.appendChild(alertBox);
+
+            setTimeout(() => {
+                alertBox.remove();
+            }, 3000);
+        };
+        
+        window.switchSection = (sectionName) => {
+            activeSection = sectionName;
+            renderContent();
+            updateTabStyling();
+        };
+
+        // Function to toggle favorite status (UPDATED FOR PERSISTENCE AND NAVIGATION)
+        window.toggleFavorite = (itemId, itemType) => {
+            let sectionKey = Object.keys(learningContent).find(key => 
+                learningContent[key].items.some(i => i.id === itemId)
+            );
+            
+            if (!sectionKey) return; 
+
+            const sectionData = learningContent[sectionKey];
+            const itemIndex = sectionData.items.findIndex(i => i.id === itemId);
+            if (itemIndex === -1) return;
+
+            const currentStatus = sectionData.items[itemIndex].isFavorite;
+            
+            // Toggle the favorite status
+            sectionData.items[itemIndex].isFavorite = !currentStatus;
+
+            // Save state immediately
+            saveState();
+
+            // Only navigate if the item was added to favorites (currentStatus was false)
+            if (!currentStatus) {
+                window.alert(`${itemType} "${sectionData.items[itemIndex].name}" added to favorites. Redirecting now!`);
+                // 1. Navigate to the favorites page (as requested)
+                window.navigateTo('favorites');
+            } else {
+                window.alert(`${itemType} "${sectionData.items[itemIndex].name}" removed from favorites.`);
+                renderContent(); // Re-render if staying on the page (i.e., when un-liking)
+            }
+        };
+
+        // NEW: Function to generate and download mock PDF
+        window.generatePDF = () => {
+            if (isComplete) {
+                window.alert("Please use your browser's Print dialog (Ctrl+P / Cmd+P) and select 'Save as PDF'.");
+                window.print();
+            } else {
+                window.alert("Please mark the section as COMPLETE before downloading notes.", false);
+            }
+        };
+
+        // NEW: Function to mark level as complete
+        window.markComplete = () => {
+            isComplete = true;
+            saveCompletionStatus();
+            window.alert("Level 3 marked as COMPLETE! You can now download the PDF notes.");
+            updateCompletionButtons(); 
+        }
+
+        // NEW: Helper to update button states
+        const updateCompletionButtons = () => {
+            const completeButton = document.getElementById('completeButton');
+            const downloadButton = document.getElementById('downloadButton');
+            
+            if (isComplete) {
+                completeButton.classList.add('bg-green-500', 'hover:bg-green-600');
+                completeButton.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+                completeButton.textContent = "Completed! 🎉";
+                completeButton.disabled = true;
+                
+                downloadButton.classList.remove('btn-download-disabled');
+                downloadButton.classList.add('bg-purple-600', 'hover:bg-purple-700');
+            } else {
+                completeButton.classList.remove('bg-green-500', 'hover:bg-green-600');
+                completeButton.classList.add('bg-purple-500', 'hover:bg-purple-600');
+                completeButton.textContent = "Mark as Complete";
+                completeButton.disabled = false;
+                
+                downloadButton.classList.add('btn-download-disabled');
+                downloadButton.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+            }
+        }
+        
+        // Function to render content based on activeSection
+        const renderContent = () => {
+            const container = document.getElementById('contentGrid');
+            const data = learningContent[activeSection];
+
+            document.getElementById('contentTitle').textContent = data.title;
+            
+            const cardsHtml = data.items.map(item => `
+                <div class="sign-card bg-white rounded-xl shadow-lg border border-gray-100 p-4 flex flex-col justify-between relative">
+                    <div class="mb-4">
+                        <img src="${item.imageUrl}" 
+                            alt="Sign for ${item.name}" 
+                            class="sign-image-placeholder"
+                            onerror="this.onerror=null; this.src='https://placehold.co/150x150/d1d5db/4b5563?text=Image+Error';">
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-2">
+                        <div>
+                            <p class="text-xs text-gray-500">${item.type} Sign</p>
+                            <h4 class="text-2xl font-extrabold text-gray-800">${item.name}</h4>
+                        </div>
+                        <button onclick="toggleFavorite('${item.id}', '${item.type}')" 
+                                class="text-2xl text-gray-400 transition duration-150">
+                            <i class="${item.isFavorite ? 'fas text-red-500' : 'far'} fa-heart hover:text-red-400"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = cardsHtml;
+        };
+        
+        // Function to update the tab/menu styling
+        const updateTabStyling = () => {
+            document.querySelectorAll('.learning-tab').forEach(tab => {
+                if (tab.id === `tab-${activeSection}`) {
+                    tab.classList.add('tab-active');
+                } else {
+                    tab.classList.remove('tab-active');
+                }
+            });
+        };
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState(); 
+            renderContent();
+            updateTabStyling();
+            updateCompletionButtons(); // Set initial button state
+        });
+    </script>
+
+
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+                        <i class="fas fa-book-open mr-2"></i>
+                        Ishario 
+                    </button>
+                </div>
+                
+                <div class="flex items-center space-x-4 text-xl text-gray-400">
+                    <button onclick="navigateTo('dashboard')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                        <i class="fas fa-arrow-left mr-1"></i> Dashboard
+                    </button>
+                    <div class="flex items-center space-x-4 text-xl text-gray-400">
+             <i class="fas fa-user-circle cursor-pointer hover:text-purple-600" onclick="navigateTo('profile')"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8">
+
+        <div class="w-full md:w-64 flex-shrink-0">
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 sticky top-20">
+                <span class="px-3 py-1 text-xs font-semibold rounded-full text-white bg-purple-600 mb-2 inline-block">Advanced</span>
+                <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 text-purple-600">Level 3: Advanced</h3>
+
+                <button id="tab-emergency" onclick="switchSection('emergency')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-3"></i> Emergency
+                </button>
+                <button id="tab-healthcare" onclick="switchSection('healthcare')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-stethoscope mr-3"></i> Healthcare
+                </button>
+                <button id="tab-education" onclick="switchSection('education')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-user-graduate mr-3"></i> Education
+                </button>
+                <button id="tab-travel" onclick="switchSection('travel')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-plane mr-3"></i> Travel
+                </button>
+                <button id="tab-others" onclick="switchSection('others')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-layer-group mr-3"></i> Others
+                </button>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 mt-6 sticky top-[30rem]">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Resources & Completion</h3>
+                
+                <button id="completeButton" onclick="markComplete()" class="w-full py-2 mb-3 rounded-lg text-white font-semibold transition duration-200">
+                    Mark as Complete
+                </button>
+
+                <button id="downloadButton" onclick="generatePDF()" class="w-full py-2 rounded-lg font-semibold transition duration-200">
+                    <i class="fas fa-download mr-2"></i> Download Cheat Sheet (PDF)
+                </button>
+            </div>
+
+        </div>
+
+        <div class="flex-grow">
+            <h2 id="contentTitle" class="text-3xl font-bold text-gray-800 mb-6">Emergency & Medical Situations</h2>
+            
+            <div id="contentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Dynamic content will be injected here -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>

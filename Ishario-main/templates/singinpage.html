@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Login / Sign Up</title>
+    <!-- Tailwind CSS CDN for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* General Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f8f8fc;
+            background: linear-gradient(135deg, #f0e6ff, #ffffff, #e6ffe6);
+        }
+
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .cta-gradient {
+            background: linear-gradient(90deg, #8a2be2, #cc66ff);
+        }
+
+        .auth-card {
+            padding: 40px;
+            border-radius: 16px;
+            max-width: 450px;
+            width: 90vw;
+            background-color: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        input:focus {
+            border-color: #8a2be2 !important;
+            box-shadow: 0 0 0 1px #8a2be2 !important;
+        }
+        
+        .auth-tab {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .auth-tab.active {
+            background-color: white;
+            color: #8a2be2;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        .checkbox-label a {
+            color: #8a2be2;
+            text-decoration: underline;
+            transition: color 0.15s;
+        }
+        .checkbox-label a:hover {
+            color: #cc66ff;
+        }
+        .password-container {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="authContainer" class="auth-card">
+        <div class="flex flex-col items-center mb-6">
+            <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-3xl mb-3">
+                <i class="fas fa-hand-paper"></i>
+            </div>
+            <h3 class="text-3xl font-bold main-gradient-text">Ishario</h3>
+            <p class="text-sm text-gray-500">Master sign language with interactive learning</p>
+        </div>
+
+        <div class="flex bg-gray-100 rounded-xl mb-6 p-1">
+            <button id="tab-login" onclick="switchAuthView('login')" class="auth-tab flex-1 py-2 rounded-xl text-gray-500 transition duration-200 active">Login</button>
+            <button id="tab-signup" onclick="switchAuthView('signup')" class="auth-tab flex-1 py-2 rounded-xl text-gray-500 transition duration-200">Sign Up</button>
+            <button id="tab-reset" onclick="switchAuthView('reset')" class="auth-tab flex-1 py-2 rounded-xl text-gray-500 transition duration-200">Reset</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="form-login" class="auth-form-content">
+            <form onsubmit="event.preventDefault(); handleLogin();">
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-4">Email</label>
+                <input type="email" id="loginEmail" placeholder="your@email.com" class="w-full p-3 border border-gray-300 rounded-lg transition duration-150">
+                
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-4">Password</label>
+                <div class="password-container">
+                    <input type="password" id="loginPassword" placeholder="••••••••" class="w-full p-3 border border-gray-300 rounded-lg transition duration-150 pr-10">
+                    <i id="toggleLoginPassword" class="fas fa-eye password-toggle" onclick="togglePasswordVisibility('loginPassword', this)"></i>
+                </div>
+                <p id="loginError" class="error-message text-red-500 text-xs mt-1"></p>
+                
+                <button type="submit" class="w-full mt-6 py-3 rounded-xl text-white font-semibold cta-gradient hover:opacity-90 transition duration-150">Login</button>
+                
+                <p class="text-center text-sm text-gray-500 mt-4">
+                    <button type="button" onclick="switchAuthView('reset')" class="text-purple-600 hover:underline">Forgot password?</button>
+                </p>
+            </form>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div id="form-signup" class="auth-form-content hidden">
+            <form onsubmit="event.preventDefault(); handleSignUp();" id="signupForm">
+                <div class="flex space-x-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                        <input type="text" id="signUpFirstName" name="first_name" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                        <input type="text" id="signUpLastName" name="last_name" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+                
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-4">Username</label>
+                <input type="text" id="signUpUsername" name="username" class="w-full p-3 border border-gray-300 rounded-lg">
+                <p id="usernameError" class="error-message text-red-500 text-xs mt-1"></p>
+
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-4">Email (Must be valid)</label>
+                <input type="email" id="signUpEmail" name="email" placeholder="your@email.com" class="w-full p-3 border border-gray-300 rounded-lg">
+                <p id="emailError" class="error-message text-red-500 text-xs mt-1"></p>
+
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-4">Contact Number (10 digits must)</label>
+                <input type="number" id="signUpContact" name="contact" placeholder="10 digits" class="w-full p-3 border border-gray-300 rounded-lg">
+                <p id="contactError" class="error-message text-red-500 text-xs mt-1"></p>
+
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-4">Password</label>
+                <div class="password-container">
+                    <input type="password" id="signUpPassword" name="password" class="w-full p-3 border border-gray-300 rounded-lg pr-10">
+                    <i id="toggleSignUpPassword" class="fas fa-eye password-toggle" onclick="togglePasswordVisibility('signUpPassword', this)"></i>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char</p>
+                <p id="passwordError" class="error-message text-red-500 text-xs mt-1"></p>
+                
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-4">Confirm Password</label>
+                <div class="password-container">
+                    <input type="password" id="signUpConfirmPassword" class="w-full p-3 border border-gray-300 rounded-lg pr-10">
+                    <i id="toggleSignUpConfirmPassword" class="fas fa-eye password-toggle" onclick="togglePasswordVisibility('signUpConfirmPassword', this)"></i>
+                </div>
+                <p id="confirmPasswordError" class="error-message text-red-500 text-xs mt-1"></p>
+                
+                <div class="flex items-center mt-4">
+                    <input type="checkbox" id="termsCheck" class="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                    <label for="termsCheck" class="ml-2 block text-sm text-gray-900 checkbox-label">
+                        I agree to the <a href="javascript:void(0)" onclick="viewTerms('termsnconditions')">Terms and Conditions</a>
+                    </label>
+                </div>
+                <p id="termsError" class="error-message text-red-500 text-xs mt-1"></p>
+
+                <button type="submit" class="w-full mt-6 py-3 rounded-xl text-white font-semibold cta-gradient hover:opacity-90 transition duration-150">Create Account</button>
+            </form>
+        </div>
+
+        <!-- Reset Form -->
+        <div id="form-reset" class="auth-form-content hidden">
+            <div id="reset-email-stage">
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Enter your email</label>
+                <input type="email" id="resetEmail" placeholder="your@email.com" class="w-full p-3 border border-gray-300 rounded-lg">
+                <p id="resetError" class="text-red-500 text-xs mt-1"></p>
+                <button onclick="handlePasswordReset()" class="w-full mt-4 py-3 rounded-xl text-white font-semibold cta-gradient hover:opacity-90 transition duration-150">Send OTP</button>
+            </div>
+
+            <div id="reset-otp-stage" class="hidden">
+                <p class="text-sm text-gray-600 mb-2">OTP sent to <span id="otpEmailDisplay"></span></p>
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Enter OTP</label>
+                <input type="text" id="otpInput" placeholder="6-digit OTP" class="w-full p-3 border border-gray-300 rounded-lg">
+                
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">New Password</label>
+                <input type="password" id="resetNewPassword" placeholder="New Password" class="w-full p-3 border border-gray-300 rounded-lg">
+                
+                <p id="otpError" class="text-red-500 text-xs mt-1"></p>
+                <button onclick="handleOTPVerification()" class="w-full mt-4 py-3 rounded-xl text-white font-semibold cta-gradient hover:opacity-90 transition duration-150">Verify OTP & Reset Password</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===================== SCRIPT ===================== -->
+    <script>
+    // --- State ---
+    window.appState = { authView: 'login' };
+
+    // --- Switch Tabs ---
+    window.switchAuthView = (view) => {
+        window.appState.authView = view;
+        document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+        document.getElementById('tab-' + view).classList.add('active');
+
+        document.querySelectorAll('.auth-form-content').forEach(f => f.classList.add('hidden'));
+        document.getElementById('form-' + view).classList.remove('hidden');
+
+        // Reset OTP stages
+        if (view === 'reset') {
+            document.getElementById('reset-email-stage').classList.remove('hidden');
+            document.getElementById('reset-otp-stage').classList.add('hidden');
+        }
+    };
+
+    // --- Password Visibility Toggle ---
+    window.togglePasswordVisibility = (inputId, iconEl) => {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            iconEl.classList.remove("fa-eye");
+            iconEl.classList.add("fa-eye-slash");
+        } else {
+            input.type = "password";
+            iconEl.classList.remove("fa-eye-slash");
+            iconEl.classList.add("fa-eye");
+        }
+    };
+
+    // --- Login ---
+    window.handleLogin = async () => {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        document.getElementById('loginError').textContent = '';
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                // Clear completion flags from localStorage on successful login
+                if (data.clearCompletionFlags) {
+                    localStorage.removeItem('level1Complete');
+                    localStorage.removeItem('level2Complete');
+                    localStorage.removeItem('level3Complete');
+                }
+                window.location.href = data.redirect || '/dashboard';
+            } else {
+                document.getElementById('loginError').textContent = data.error || 'Invalid credentials';
+            }
+        } catch(err) {
+            console.error(err);
+            document.getElementById('loginError').textContent = 'Network error';
+        }
+    };
+
+    // --- Sign Up ---
+    window.handleSignUp = async () => {
+        const formEl = document.getElementById('signupForm');
+        const formData = new FormData(formEl);
+
+        const password = formData.get('password');
+        const confirmPassword = document.getElementById('signUpConfirmPassword').value;
+        const terms = document.getElementById('termsCheck').checked;
+
+        // Basic validations
+        if (password !== confirmPassword) { alert('Passwords do not match'); return; }
+        if (!terms) { alert('Please accept terms'); return; }
+
+        try {
+            const res = await fetch('/api/signup', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.message);
+                switchAuthView('login');
+            } else {
+                alert(data.error || 'Signup failed');
+            }
+        } catch(err) {
+            console.error(err);
+            alert('Network error');
+        }
+    };
+
+    // --- Password Reset Stage 1: Send OTP ---
+    window.handlePasswordReset = async () => {
+        const email = document.getElementById('resetEmail').value;
+        document.getElementById('resetError').textContent = '';
+        if (!email) { document.getElementById('resetError').textContent = 'Enter email'; return; }
+
+        const formData = new FormData();
+        formData.append('email', email);
+
+        try {
+            const res = await fetch('/send-otp', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.message);
+                document.getElementById('reset-email-stage').classList.add('hidden');
+                document.getElementById('reset-otp-stage').classList.remove('hidden');
+                document.getElementById('otpEmailDisplay').textContent = email;
+            } else {
+                document.getElementById('resetError').textContent = data.error || 'Failed to send OTP';
+            }
+        } catch(err) {
+            console.error(err);
+            document.getElementById('resetError').textContent = 'Network error';
+        }
+    };
+
+    // --- Password Reset Stage 2: Verify OTP & Reset Password ---
+    window.handleOTPVerification = async () => {
+        const otp = document.getElementById('otpInput').value;
+        const newPassword = document.getElementById('resetNewPassword').value;
+        document.getElementById('otpError').textContent = '';
+
+        if (!otp || otp.length !== 6) { document.getElementById('otpError').textContent = 'Enter 6-digit OTP'; return; }
+        if (!newPassword) { document.getElementById('otpError').textContent = 'Enter new password'; return; }
+
+        try {
+            // Step 1: Verify OTP
+            const formData = new FormData();
+            formData.append('otp', otp);
+            const verifyRes = await fetch('/verifyotp', { method: 'POST', body: formData });
+            const verifyData = await verifyRes.json();
+
+            if (verifyRes.ok) {
+                // Step 2: Reset password
+                const resetRes = await fetch('/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('otpEmailDisplay').textContent,
+                        otp: otp,
+                        new_password: newPassword
+                    })
+                });
+                const resetData = await resetRes.json();
+                if (resetRes.ok) {
+                    alert(resetData.message + '. Please login.');
+                    switchAuthView('login');
+                } else {
+                    document.getElementById('otpError').textContent = resetData.error || 'Failed to reset password';
+                }
+            } else {
+                document.getElementById('otpError').textContent = verifyData.error || 'Invalid OTP';
+            }
+        } catch(err) {
+            console.error(err);
+            document.getElementById('otpError').textContent = 'Network error';
+        }
+    };
+    </script>
+
+</body>
+</html>

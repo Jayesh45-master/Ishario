@@ -1,0 +1,19 @@
+.conda/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.env.*
+
+# ML artifacts
+model.h5
+model.h5.bak
+*.keras
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+

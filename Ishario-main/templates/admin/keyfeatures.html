@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ishario • Admin Key Features</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ishario: { primary: "#7C3AED", primaryLight: "#A78BFA", bg: "#F5F6FA", danger:"#EF4444" }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* simple accordion caret rotate */
+    .caret { transition: transform .2s ease; }
+    .open .caret { transform: rotate(90deg); }
+  </style>
+</head>
+<body class="bg-ishario-bg min-h-screen">
+  <!-- Top Bar -->
+  <header class="w-full bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
+      <div class="text-ishario-primary font-extrabold text-xl tracking-tight flex items-center gap-2">
+        <span class="inline-block w-6 h-6 rounded-md bg-ishario-primary"></span>
+        Ishario
+      </div>
+      <nav class="ml-auto flex items-center gap-4">
+        <a href="./admin.html" class="text-sm text-gray-600 hover:text-gray-900">Dashboard</a>
+        <span class="text-xs px-2 py-1 rounded-full bg-purple-100 text-ishario-primary">Admin</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 mt-8 mb-16">
+    <div class="flex items-baseline justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold">Key Features</h1>
+        <p class="text-gray-500">Manage users, content, feedback, analytics, and more—consistent with Ishario’s design.</p>
+      </div>
+      <a href="/admin/authentication"
+         class="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-ishario-primary text-white text-sm hover:bg-purple-700">
+        Logout
+      </a>
+    </div>
+
+    <!-- Quick Stats (Demo) -->
+<section class="grid md:grid-cols-4 gap-4 mt-6">
+  <div class="bg-white rounded-2xl p-5 shadow-sm">
+    <p class="text-sm text-gray-500">Total Users</p>
+    <!-- Add id for dynamic update -->
+    <p id="stat-total-users" class="text-2xl font-semibold mt-1">1,284</p>
+  </div>
+  <div class="bg-white rounded-2xl p-5 shadow-sm">
+    <p class="text-sm text-gray-500">Active Learners</p>
+    <!-- Add id for dynamic update -->
+    <p id="stat-active-learners" class="text-2xl font-semibold mt-1">476</p>
+  </div>
+  <div class="bg-white rounded-2xl p-5 shadow-sm">
+    <p class="text-sm text-gray-500">Feedback</p>
+    <!-- Add id for dynamic update -->
+    <p id="stat-total-feedback" class="text-2xl font-semibold mt-1">92</p>
+  </div>
+  <div class="bg-white rounded-2xl p-5 shadow-sm">
+    <p class="text-sm text-gray-500">New This Week</p>
+    <p class="text-2xl font-semibold mt-1">+18</p>
+  </div>
+</section>
+
+<!-- Feature Groups --> 
+ <section class="mt-8 space-y-4" id="features">
+  
+ </section>
+
+
+      <!-- Dashboard Overview -->
+      <article class="bg-white rounded-2xl shadow-sm">
+  <button class="w-full text-left p-5 flex items-center gap-3 group toggle">
+    <svg class="w-5 h-5 text-ishario-primary caret" viewBox="0 0 20 20" fill="currentColor"><path d="M7 5l6 5-6 5V5z"/></svg>
+    <span class="font-semibold">Dashboard Overview</span>
+    <span class="ml-auto text-xs px-2 py-1 rounded-full bg-purple-100 text-ishario-primary">✅</span>
+  </button>
+  <div class="px-5 pb-5 content hidden">
+    <p class="text-sm text-gray-600">Displays total users, feedback count, active learners, and latest updates.</p>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <!-- Refresh Stats Button -->
+      <button id="refreshStatsBtn" class="px-3 py-2 text-sm rounded-lg bg-ishario-primary text-white hover:bg-purple-700">Refresh Stats</button>
+      <!-- Configure Cards Button - Now links to dashboard.html -->
+      <a href="/admin/dashboard" class="px-3 py-2 text-sm rounded-lg border border-gray-200 hover:bg-gray-50">Open Dashboard</a>
+    </div>
+  </div>
+</article>
+
+
+      <!-- User Management -->
+      <article class="bg-white rounded-2xl shadow-sm">
+        <button class="w-full text-left p-5 flex items-center gap-3 group toggle">
+          <svg class="w-5 h-5 text-ishario-primary caret" viewBox="0 0 20 20" fill="currentColor"><path d="M7 5l6 5-6 5V5z"/></svg>
+          <span class="font-semibold">User Management</span>
+          <span class="ml-auto text-xs px-2 py-1 rounded-full bg-purple-100 text-ishario-primary">✅</span>
+        </button>
+        <div class="px-5 pb-5 content hidden">
+          <ul class="list-disc ml-5 text-sm text-gray-600 space-y-1">
+            <li>View, edit, or delete registered users.</li>
+            <li>Reset passwords or manage user access.</li>
+          </ul>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <a href="/admin/user-management" class="px-3 py-2 text-sm rounded-lg bg-ishario-primary text-white hover:bg-purple-700 inline-flex items-center">
+              Open Users
+            </a>
+            <button class="px-3 py-2 text-sm rounded-lg border border-gray-200 hover:bg-gray-50">Bulk Actions</button>
+          </div>
+        </div>
+      </article>
+
+
+      <!-- Feedback Management -->
+      <article class="bg-white rounded-2xl shadow-sm">
+        <button class="w-full text-left p-5 flex items-center gap-3 group toggle">
+          <svg class="w-5 h-5 text-ishario-primary caret" viewBox="0 0 20 20" fill="currentColor"><path d="M7 5l6 5-6 5V5z"/></svg>
+          <span class="font-semibold">Feedback Management</span>
+          <span class="ml-auto text-xs px-2 py-1 rounded-full bg-purple-100 text-ishario-primary">✅</span>
+        </button>
+        <div class="px-5 pb-5 content hidden">
+          <ul class="list-disc ml-5 text-sm text-gray-600 space-y-1">
+            <li>View feedback from users.</li>
+            <li>Respond to issues or suggestions for improvement.</li>
+          </ul>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <a href="/admin/feedback" class="px-3 py-2 text-sm rounded-lg bg-ishario-primary text-white hover:bg-purple-700 inline-flex items-center">
+              Open Feedback
+            </a>
+            
+          </div>
+        </div>
+      </article>
+
+     
+
+      
+
+      
+
+    </section>
+
+  </main>
+<script>
+  // helper to set element text and handle missing element
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (!el) {
+    console.warn('Missing element for id:', id);
+    return;
+  }
+  el.textContent = value;
+}
+
+async function fetchJson(path) {
+  try {
+    const res = await fetch(path, { cache: 'no-store' });
+    const json = await res.json();
+    if (!res.ok) {
+      console.error('Fetch failed', path, res.status, json);
+      throw new Error(json && json.error ? json.error : 'fetch_error');
+    }
+    return json;
+  } catch (err) {
+    console.error('Error fetching', path, err);
+    throw err;
+  }
+}
+
+async function updateStats() {
+  try {
+    // fetch in parallel
+    const [u, a, f] = await Promise.all([
+      fetchJson('/api/total_users'),
+      fetchJson('/api/active_learners'),
+      fetchJson('/api/total_feedback'),
+    ]);
+
+    console.log('API results:', { u, a, f });
+    // write into DOM elements (IDs below must exist in HTML)
+    setText('stat-total-users', String(u.total_users ?? u.totalUsers ?? 0));
+    setText('stat-active-learners', String(a.active_learners ?? a.activeLearners ?? 0));
+    setText('stat-total-feedback', String(f.total_feedback ?? f.totalFeedback ?? 0));
+  } catch (err) {
+    // show fallback values and log
+    setText('stat-total-users', '—');
+    setText('stat-active-learners', '—');
+    setText('stat-total-feedback', '—');
+    console.error('updateStats failed', err);
+  }
+}
+
+// run on load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', updateStats);
+} else {
+  updateStats();
+}
+
+// simple accordion behavior (kept intact)
+document.querySelectorAll('.toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const article = btn.parentElement;
+    article.classList.toggle('open');
+    const content = article.querySelector('.content');
+    if (content) content.classList.toggle('hidden');
+  });
+});
+
+// helper to fetch and display the stats (Total Users, Active Learners, Total Feedback)
+async function fetchStats() {
+  try {
+    // Fetch stats in parallel
+    const totalUsersRes = await fetch('/api/total_users');
+    const activeLearnersRes = await fetch('/api/active_learners');
+    const totalFeedbackRes = await fetch('/api/total_feedback');
+
+    if (!totalUsersRes.ok || !activeLearnersRes.ok || !totalFeedbackRes.ok) {
+      throw new Error('Error fetching stats');
+    }
+
+    const totalUsersData = await totalUsersRes.json();
+    const activeLearnersData = await activeLearnersRes.json();
+    const totalFeedbackData = await totalFeedbackRes.json();
+
+    setText('stat-total-users', totalUsersData.total_users);
+    setText('stat-active-learners', activeLearnersData.active_learners);
+    setText('stat-total-feedback', totalFeedbackData.total_feedback);
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+  }
+}
+
+// Initialize the stats when the page loads
+window.addEventListener('load', () => {
+  fetchStats();
+});
+
+// Utility function to handle button clicks for stats refresh
+document.getElementById('refreshStatsBtn').addEventListener('click', () => {
+  fetchStats();
+});
+
+// Navigation link for opening the dashboard
+document.getElementById('openDashboardBtn').addEventListener('click', () => {
+  window.location.href = '/admin/dashboard'; // Open dashboard when clicked
+});
+
+// Simple search behavior (to search through features)
+document.querySelectorAll('.search-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+    const features = document.querySelectorAll('.feature-item');
+    features.forEach(item => {
+      const title = item.querySelector('.feature-title').textContent.toLowerCase();
+      if (title.includes(searchQuery)) {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Level 1: Basics</title>
+    <!-- Tailwind CSS CDN for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8fc;
+            min-height: 100vh;
+        }
+
+        /* Gradient Text Style for Ishario Logo */
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Active Tab Styling */
+        .tab-active {
+            background-color: #8a2be2;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Sign Card Styling */
+        .sign-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            @apply rounded-xl shadow-lg border border-gray-100;
+        }
+        .sign-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mock GIF/Image Placeholder */
+        .sign-image-placeholder {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            background-color: #f3f4f6; /* Light gray background for image area */
+            border-radius: 8px;
+        }
+        
+        .btn-download-disabled {
+            @apply bg-gray-300 text-gray-600 cursor-not-allowed;
+        }
+        
+        /* --- Print Styles for PDF Generation (Mock) --- */
+        @media print {
+            nav, .w-full.md\:w-64.flex-shrink-0, .fa-heart, button {
+                display: none !important;
+            }
+            body { background-color: white; }
+            .max-w-7xl, .flex-grow {
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                flex-direction: column !important;
+            }
+            .sign-card {
+                box-shadow: none !important;
+                border: 1px solid #eee;
+                margin: 5px;
+            }
+            #contentTitle { text-align: center; margin-top: 10px; margin-bottom: 20px; }
+            #contentGrid {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr); 
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <!-- Mock JavaScript State (Simplified) -->
+    <script>
+        // --- DATA STRUCTURE: Using images from static folder ---
+        const defaultLearningContent = {
+            alphabets: {
+                title: "Alphabets (A-Z)",
+                items: [
+                    { id: 'a', name: 'A', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/A.png', category: 'Alphabets' },
+                    { id: 'b', name: 'B', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/B.png', category: 'Alphabets' },
+                    { id: 'c', name: 'C', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/C.png', category: 'Alphabets' },
+                    { id: 'd', name: 'D', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/D.png', category: 'Alphabets' },
+                    { id: 'e', name: 'E', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/E.png', category: 'Alphabets' },
+                    { id: 'f', name: 'F', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/F.png', category: 'Alphabets' },
+                    { id: 'g', name: 'G', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/G.png', category: 'Alphabets' },
+                    { id: 'h', name: 'H', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/H.png', category: 'Alphabets' },
+                    { id: 'i', name: 'I', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/I.png', category: 'Alphabets' },
+                    { id: 'j', name: 'J', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/J.png', category: 'Alphabets' },
+                    { id: 'k', name: 'K', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/K.png', category: 'Alphabets' },
+                    { id: 'l', name: 'L', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/L.png', category: 'Alphabets' },
+                    { id: 'm', name: 'M', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/M.png', category: 'Alphabets' },
+                    { id: 'n', name: 'N', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/N.png', category: 'Alphabets' },
+                    { id: 'o', name: 'O', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/O.png', category: 'Alphabets' },
+                    { id: 'p', name: 'P', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/P.png', category: 'Alphabets' },
+                    { id: 'q', name: 'Q', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/Q.png', category: 'Alphabets' },
+                    { id: 'r', name: 'R', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/R.png', category: 'Alphabets' },
+                    { id: 's', name: 'S', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/S.png', category: 'Alphabets' },
+                    { id: 't', name: 'T', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/T.png', category: 'Alphabets' },
+                    { id: 'u', name: 'U', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/U.png', category: 'Alphabets' },
+                    { id: 'v', name: 'V', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/V.png', category: 'Alphabets' },
+                    { id: 'w', name: 'W', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/W.png', category: 'Alphabets' },
+                    { id: 'x', name: 'X', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/X.png', category: 'Alphabets' },
+                    { id: 'y', name: 'Y', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/Y.png', category: 'Alphabets' },
+                    { id: 'z', name: 'Z', type: 'Alphabet', isFavorite: false, imageUrl: '/static/signs/Z.png', category: 'Alphabets' },
+                ]
+            },
+            numbers: {
+                title: "Numbers (0-9)",
+                items: [
+                    { id: 'n0', name: 'Zero (0)', type: 'Number', isFavorite: false, imageUrl: '/static/signs/0.png', category: 'Numbers' },
+                    { id: 'n1', name: 'One (1)', type: 'Number', isFavorite: false, imageUrl: '/static/signs/1.png', category: 'Numbers' },
+                    { id: 'n2', name: 'Two (2)', type: 'Number', isFavorite: false, imageUrl: '/static/signs/2.png', category: 'Numbers' },
+                    { id: 'n3', name: 'Three (3)', type: 'Number', isFavorite: false, imageUrl: '/static/signs/3.png', category: 'Numbers' },
+                    { id: 'n4', name: 'Four (4)', type: 'Number', isFavorite: false, imageUrl: '/static/signs/4.png', category: 'Numbers' },
+                    { id: 'n5', name: 'Five (5)', type: 'Number', isFavorite: false, imageUrl: '/static/signs/5.png', category: 'Numbers' },
+                    { id: 'n6', name: 'Six (6)', type: 'Number', isFavorite: false, imageUrl: '/static/signs/6.png', category: 'Numbers' },
+                    { id: 'n7', name: 'Seven (7)', type: 'Number', isFavorite: false, imageUrl: '/static/signs/7.png', category: 'Numbers' },
+                    { id: 'n8', name: 'Eight (8)', type: 'Number', isFavorite: false, imageUrl: '/static/signs/8.png', category: 'Numbers' },
+                    { id: 'n9', name: 'Nine (9)', type: 'Number', isFavorite: false, imageUrl: '/static/signs/9.png', category: 'Numbers' },
+                ]
+            },
+            days: {
+                title: "Days of the Week",
+                items: [
+                    { id: 'd1', name: 'Monday', type: 'Day', isFavorite: false, imageUrl: '/static/signs/Monday.png', category: 'Days' },
+                    { id: 'd2', name: 'Tuesday', type: 'Day', isFavorite: false, imageUrl: '/static/signs/Tuesday.png', category: 'Days' },
+                    { id: 'd3', name: 'Wednesday', type: 'Day', isFavorite: false, imageUrl: '/static/signs/Wednesday.png', category: 'Days' },
+                    { id: 'd4', name: 'Thursday', type: 'Day', isFavorite: false, imageUrl: '/static/signs/Thursday.png', category: 'Days' },
+                    { id: 'd5', name: 'Friday', type: 'Day', isFavorite: false, imageUrl: '/static/signs/Friday.png', category: 'Days' },
+                    { id: 'd6', name: 'Saturday', type: 'Day', isFavorite: false, imageUrl: '/static/signs/Saturday.png', category: 'Days' },
+                    { id: 'd7', name: 'Sunday', type: 'Day', isFavorite: false, imageUrl: '/static/signs/Sunday.png', category: 'Days' },
+                ]
+            },
+            months: {
+                title: "Months",
+                items: [
+                    { id: 'm1', name: 'January', type: 'Month', isFavorite: false, imageUrl: '/static/signs/January.png', category: 'Months' },
+                    { id: 'm2', name: 'February', type: 'Month', isFavorite: false, imageUrl: '/static/signs/February.png', category: 'Months' },
+                    { id: 'm3', name: 'March', type: 'Month', isFavorite: false, imageUrl: '/static/signs/March.png', category: 'Months' },
+                    { id: 'm4', name: 'April', type: 'Month', isFavorite: false, imageUrl: '/static/signs/April.png', category: 'Months' },
+                    { id: 'm5', name: 'May', type: 'Month', isFavorite: false, imageUrl: '/static/signs/May.png', category: 'Months' },
+                    { id: 'm6', name: 'June', type: 'Month', isFavorite: false, imageUrl: '/static/signs/June.png', category: 'Months' },
+                    { id: 'm7', name: 'July', type: 'Month', isFavorite: false, imageUrl: '/static/signs/July.png', category: 'Months' },
+                    { id: 'm8', name: 'August', type: 'Month', isFavorite: false, imageUrl: '/static/signs/August.png', category: 'Months' },
+                    { id: 'm9', name: 'September', type: 'Month', isFavorite: false, imageUrl: '/static/signs/September.png', category: 'Months' },
+                    { id: 'm10', name: 'October', type: 'Month', isFavorite: false, imageUrl: '/static/signs/October.png', category: 'Months' },
+                    { id: 'm11', name: 'November', type: 'Month', isFavorite: false, imageUrl: '/static/signs/November.png', category: 'Months' },
+                    { id: 'm12', name: 'December', type: 'Month', isFavorite: false, imageUrl: '/static/signs/December.png', category: 'Months' },
+                ]
+            },
+        };
+
+        // --- State Initialization and Persistence ---
+        let learningContent;
+        const storageKey = 'isharioLearningContent';
+        let isComplete = false; // Mock completion status for this level
+
+        // Load state from localStorage or use default
+        const loadState = () => {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                try {
+                    const storedContent = JSON.parse(stored);
+                    learningContent = {...defaultLearningContent};
+                    
+                    for(const key in defaultLearningContent) {
+                        if (storedContent[key] && storedContent[key].items) {
+                            learningContent[key].items.forEach((defaultItem) => {
+                                const storedItem = storedContent[key].items.find(si => si.id === defaultItem.id);
+                                if (storedItem) {
+                                    defaultItem.isFavorite = storedItem.isFavorite; 
+                                }
+                            });
+                        }
+                    }
+
+                } catch (e) {
+                    console.error("Error parsing stored content, using default.", e);
+                    learningContent = defaultLearningContent;
+                }
+            } else {
+                learningContent = defaultLearningContent;
+            }
+            
+            // Load completion status
+            isComplete = localStorage.getItem('level1Complete') === 'true';
+        };
+
+        // Save state to localStorage
+        const saveState = () => {
+            localStorage.setItem(storageKey, JSON.stringify(learningContent));
+        };
+        
+        // Save completion status
+        const saveCompletionStatus = () => {
+            localStorage.setItem('level1Complete', isComplete);
+        }
+
+        // State to track the current active section
+        let activeSection = 'alphabets';
+
+        // Simple mock navigation
+        window.navigateTo = (page) => {
+            // FIX APPLIED: Changed navigation to use a relative path (e.g., /dashboard) 
+            // instead of hardcoding the .html extension, ensuring it works with Flask routing.
+            console.log(`Navigating to /${page}`); 
+            window.location.href = `/${page}`;
+        };
+        
+        // UI Helper: Show a simple alert message
+        window.alert = (message) => {
+            const alertBox = document.createElement('div');
+            alertBox.textContent = message;
+            alertBox.className = 'fixed bottom-4 right-4 p-4 rounded-lg text-white bg-purple-600 shadow-xl z-50 transition-all duration-300';
+            document.body.appendChild(alertBox);
+
+            setTimeout(() => {
+                alertBox.remove();
+            }, 3000);
+        };
+        
+        // Function to switch between the four content tabs
+        window.switchSection = (sectionName) => {
+            activeSection = sectionName;
+            renderContent();
+            updateTabStyling();
+        };
+
+        // Function to toggle favorite status (UPDATED FOR PERSISTENCE)
+        window.toggleFavorite = (itemId, itemType) => {
+            // Find the correct section key by searching all content keys
+            let sectionKey = Object.keys(learningContent).find(key => 
+                learningContent[key].items.some(i => i.id === itemId)
+            );
+            
+            if (!sectionKey) return; // Item not found
+
+            const sectionData = learningContent[sectionKey];
+
+            // Find the item index
+            const itemIndex = sectionData.items.findIndex(i => i.id === itemId);
+            if (itemIndex === -1) return;
+
+            // Toggle the isFavorite property
+            const currentStatus = sectionData.items[itemIndex].isFavorite;
+            sectionData.items[itemIndex].isFavorite = !currentStatus;
+
+            saveState();
+
+            const status = !currentStatus ? "added to" : "removed from";
+            window.alert(`${itemType} "${sectionData.items[itemIndex].name}" ${status} favorites`);
+
+            renderContent();
+        };
+        
+        // NEW: Function to generate and download mock PDF
+        window.generatePDF = () => {
+            if (isComplete) {
+                // CORE UPDATE: Trigger browser print/save dialog (Save as PDF)
+                window.alert("Please use the browser's Print dialog and select 'Save as PDF' (Ctrl+P/Cmd+P).", true);
+                
+                // Trigger the print dialog
+                window.print();
+
+            } else {
+                window.alert("Please mark the section as COMPLETE before downloading notes.", false);
+            }
+        };
+
+        // NEW: Function to mark level as complete
+        window.markComplete = () => {
+            isComplete = true;
+            saveCompletionStatus();
+            window.alert("Level 1 marked as COMPLETE! You can now download the PDF notes.");
+            
+            // Update buttons visually
+            const completeButton = document.getElementById('completeButton');
+            const downloadButton = document.getElementById('downloadButton');
+            
+            completeButton.classList.add('bg-green-500', 'hover:bg-green-600');
+            completeButton.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+            completeButton.textContent = "Completed! 🎉";
+            completeButton.disabled = true;
+            
+            downloadButton.classList.remove('btn-download-disabled');
+            downloadButton.classList.add('bg-purple-600', 'hover:bg-purple-700');
+        }
+        
+        // Function to render content based on activeSection
+        const renderContent = () => {
+            const container = document.getElementById('contentGrid');
+            const data = learningContent[activeSection];
+
+            document.getElementById('contentTitle').textContent = data.title;
+            
+            const cardsHtml = data.items.map(item => `
+
+                <div class="sign-card bg-white rounded-xl shadow-lg border border-gray-100 p-4 flex flex-col justify-between">
+                    <!-- Image/GIF Placeholder -->
+                    <div class="mb-4">
+                        <img src="${item.imageUrl}" 
+                             alt="Sign for ${item.name}" 
+                             class="sign-image-placeholder"
+                             onerror="this.onerror=null; this.src='https://placehold.co/150x150/d1d5db/4b5563?text=Image+Error';">
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-2">
+                        <div>
+                            <p class="text-xs text-gray-500">${item.type} Sign</p>
+                            <h4 class="text-2xl font-extrabold text-gray-800">${item.name}</h4>
+                        </div>
+                        <button onclick="toggleFavorite('${item.id}', '${item.type}')" 
+                                class="text-2xl text-gray-400 transition duration-150">
+                            <i class="${item.isFavorite ? 'fas text-red-500' : 'far'} fa-heart hover:text-red-400"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = cardsHtml;
+        };
+        
+        // Function to update the tab/menu styling
+        const updateTabStyling = () => {
+            document.querySelectorAll('.learning-tab').forEach(tab => {
+                if (tab.id === `tab-${activeSection}`) {
+                    tab.classList.add('tab-active');
+                } else {
+                    tab.classList.remove('tab-active');
+                }
+            });
+            
+            // NEW: Update sidebar buttons based on completion status
+            const completeButton = document.getElementById('completeButton');
+            const downloadButton = document.getElementById('downloadButton');
+            
+            if (isComplete) {
+                completeButton.classList.add('bg-green-500', 'hover:bg-green-600');
+                completeButton.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+                completeButton.textContent = "Completed! 🎉";
+                completeButton.disabled = true;
+                downloadButton.classList.remove('btn-download-disabled');
+                downloadButton.classList.add('bg-purple-600', 'hover:bg-purple-700');
+            } else {
+                 completeButton.classList.remove('bg-green-500', 'hover:bg-green-600');
+                 completeButton.classList.add('bg-purple-500', 'hover:bg-purple-600');
+                 completeButton.textContent = "Mark as Complete";
+                 completeButton.disabled = false;
+                 downloadButton.classList.add('btn-download-disabled');
+                 downloadButton.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+            }
+        };
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState(); // Load persistent state first
+            renderContent();
+            updateTabStyling();
+        });
+    </script>
+
+
+    <!-- --- Top Navigation Bar (Ishario) --- -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <!-- Logo/Title: Ishario -->
+                <div class="flex-shrink-0 flex items-center">
+                    <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+                        <i class="fas fa-book-open mr-2"></i>
+                        Ishario 
+                    </button>
+                </div>
+                
+                <!-- Right Side: Navigation/User Icons -->
+                <div class="flex items-center space-x-4 text-xl text-gray-400">
+                    <button onclick="navigateTo('dashboard')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                        <i class="fas fa-arrow-left mr-1"></i> Dashboard
+                    </button>
+                    <div class="flex items-center space-x-4 text-xl text-gray-400">
+             <i class="fas fa-user-circle cursor-pointer hover:text-purple-600" onclick="navigateTo('profile')"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- --- Main Content Area --- -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8">
+
+        <!-- Sidebar/Menu Bar (Tabs) -->
+        <div class="w-full md:w-64 flex-shrink-0">
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 sticky top-20">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Level 1: Basics</h3>
+
+                <!-- Tab Buttons -->
+                <button id="tab-alphabets" onclick="switchSection('alphabets')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-font mr-3"></i> Alphabets
+                </button>
+                <button id="tab-numbers" onclick="switchSection('numbers')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-sort-numeric-up mr-3"></i> Numbers
+                </button>
+                <button id="tab-days" onclick="switchSection('days')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-calendar-day mr-3"></i> Days
+                </button>
+                <button id="tab-months" onclick="switchSection('months')" class="learning-tab w-full text-left p-3 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition duration-150 flex items-center">
+                    <i class="fas fa-calendar-alt mr-3"></i> Months
+                </button>
+            </div>
+            
+            <!-- NEW: Notes/Completion Section -->
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 mt-6 sticky top-[25rem]">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Resources & Completion</h3>
+                
+                <!-- Mark Complete Button -->
+                <button id="completeButton" onclick="markComplete()" class="w-full py-2 mb-3 rounded-lg text-white font-semibold transition duration-200 bg-purple-500 hover:bg-purple-600">
+                    Mark as Complete
+                </button>
+
+                <!-- Download Notes Button (Initially disabled/grayed out) -->
+                <button id="downloadButton" onclick="generatePDF()" class="w-full py-2 rounded-lg font-semibold transition duration-200 btn-download-disabled">
+                    <i class="fas fa-download mr-2"></i> Download Cheat Sheet (PDF)
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="flex-grow">
+            <h2 id="contentTitle" class="text-3xl font-bold text-gray-800 mb-6">Alphabets (A-Z)</h2>
+            
+            <div id="contentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Dynamic content (sign cards) will be injected here -->
+            </div>
+
+        </div>
+
+    </div>
+</body>
+</html>

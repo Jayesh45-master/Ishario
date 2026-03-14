@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Progress Tracker</title>
+    <!-- Tailwind CSS CDN for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8fc;
+            min-height: 100vh;
+        }
+
+        /* Gradient Text Style for Ishario Logo */
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Progress Bar Styles */
+        .progress-bar-base {
+            height: 10px;
+            border-radius: 9999px;
+            background-color: #e5e7eb;
+            overflow: hidden;
+        }
+        .progress-fill-purple {
+            height: 100%;
+            background: linear-gradient(90deg, #8a2be2, #cc66ff);
+            transition: width 0.5s ease-in-out;
+        }
+        
+        /* Heatmap Styles */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(15px, 1fr));
+            gap: 4px;
+        }
+        .heatmap-square {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+            background-color: #ebedf0; /* Level 0 / Inactive */
+            transition: background-color 0.3s;
+        }
+
+        /* Mock Streak Levels (using a green color scale for activity) */
+        .level-1 { background-color: #c6e48b; }
+        .level-2 { background-color: #7bc96f; }
+        .level-3 { background-color: #239a3b; }
+        .level-4 { background-color: #196127; }
+        
+        .progress-card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <!-- JavaScript Navigation and Mock Data -->
+    <script>
+        // --- CONFIGURATION ---
+        // Word counts for each level (MOCK total words in each level's content)
+        const LEVEL_WORD_COUNTS = {
+            'level1Complete': 55, // Basics - UPDATED
+            'level2Complete': 19, // Daily Life - UPDATED
+            'level3Complete': 16  // Advanced - UPDATED
+        };
+
+        const COMPLETION_KEYS = {
+            LEVEL_1: 'level1Complete',
+            LEVEL_2: 'level2Complete',
+            LEVEL_3: 'level3Complete'
+        };
+
+        const STREAK_KEY = 'latestGameStreak'; 
+        const BEST_STREAK_KEY = 'bestGameStreak'; 
+        
+        // Simple mock navigation
+        function navigateTo(page) {
+            // Ensures navigation works with server-side routing (Flask compatibility)
+            window.location.href = `/${page}`; 
+        }
+
+        // --- DATA GENERATION AND RENDERING LOGIC ---
+        
+        // Helper function to mock heatmap data (0-4 intensity)
+        function generateMockActivity(days) {
+            const data = [];
+            // In a real app, this would query per-user activity from a database.
+            // Using random data here to visualize the heatmap structure.
+            for (let i = 0; i < days; i++) {
+                const intensity = Math.floor(Math.random() * 5); 
+                data.push(intensity);
+            }
+            return data;
+        }
+        
+        // Core function to load dynamic metrics from localStorage and calculate totals
+        function loadAndCalculateMetrics() {
+            // 1. Setup Level Data and calculate words learned
+            let totalWordsLearned = 0;
+            const levels = [
+                { name: "Level 1: Basics", key: COMPLETION_KEYS.LEVEL_1, words: LEVEL_WORD_COUNTS.level1Complete, details: "Alphabets, Numbers, Days & Months" },
+                { name: "Level 2: Daily Life", key: COMPLETION_KEYS.LEVEL_2, words: LEVEL_WORD_COUNTS.level2Complete, details: "Greetings, Common Phrases, & Daily Words" },
+                { name: "Level 3: Advanced", key: COMPLETION_KEYS.LEVEL_3, words: LEVEL_WORD_COUNTS.level3Complete, details: "Emergency, Healthcare, Education, & Travel" }
+            ];
+
+            levels.forEach((level, index) => {
+                const isComplete = localStorage.getItem(level.key) === 'true';
+                level.isComplete = isComplete;
+
+                if (isComplete) {
+                    // Level is COMPLETE
+                    level.percent = 100;
+                    level.status = "Complete";
+                    level.color = '#10b981'; // Tailwind green-500
+                    
+                    // ADD 100% of words to total (as requested for completed levels)
+                    totalWordsLearned += level.words; 
+
+                } else {
+                    // Level is NOT COMPLETE (Check for visual 'In Progress' status)
+                    let visualPercent = 0;
+                    // Progression logic for visuals: Show 45% if unlocked/starting
+                    if (index === 0 || localStorage.getItem(levels[index - 1].key) === 'true') {
+                         visualPercent = 45; 
+                         level.status = "In Progress";
+                         level.color = '#3b82f6'; // Tailwind blue-600
+                    } else {
+                        // Locked
+                        level.status = "Locked";
+                        level.color = '#6c757d'; // Gray
+                    }
+
+                    level.percent = visualPercent;
+                    
+                    // NEW LOGIC: If the level is NOT complete, it contributes 0 words to totalWordsLearned.
+                    // This is achieved by only incrementing inside the 'if (isComplete)' block above.
+                }
+            });
+            
+            // 2. Load Streak Metrics
+            // Assuming the speed quiz updates STREAK_KEY and BEST_STREAK_KEY
+            const currentStreak = parseInt(localStorage.getItem(STREAK_KEY) || 0);
+            const bestStreak = parseInt(localStorage.getItem(BEST_STREAK_KEY) || 25); 
+            
+            // 3. Calculate Overall Completion
+            const totalPossibleWords = levels.reduce((sum, level) => sum + level.words, 0);
+            const overallCompletion = totalPossibleWords > 0 ? Math.round((totalWordsLearned / totalPossibleWords) * 100) : 0;
+
+            return {
+                metrics: {
+                    currentStreak: currentStreak,
+                    bestStreak: bestStreak,
+                    totalWordsLearned: totalWordsLearned,
+                    overallCompletion: overallCompletion
+                },
+                levels: levels,
+                activity: generateMockActivity(91) 
+            };
+        }
+
+        // Renders the heatmap section
+        function renderHeatmap(activityData) {
+            const heatmapContainer = document.getElementById('heatmapContainer');
+            
+            let html = '';
+            activityData.forEach(intensity => {
+                const levelClass = intensity > 0 ? `level-${intensity}` : '';
+                html += `<div class="heatmap-square ${levelClass}" title="Activity Intensity: ${intensity}"></div>`;
+            });
+            
+            heatmapContainer.innerHTML = html;
+        }
+
+        // Renders the progress status section
+        function renderLevels(levelData) {
+            const levelContainer = document.getElementById('levelStatusContainer');
+            
+            const html = levelData.map(level => `
+                <div class="bg-white p-6 rounded-xl progress-card border border-gray-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xl font-semibold text-gray-800">${level.name}</h3>
+                        <span class="text-sm font-semibold" style="color: ${level.color};">${level.percent}% ${level.status}</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">${level.details}</p>
+                    <div class="progress-bar-base">
+                        <div class="progress-fill-purple" style="width: ${level.percent}%; background-color: ${level.color};"></div>
+                    </div>
+                </div>
+            `).join('');
+            
+            levelContainer.innerHTML = html;
+        }
+
+        // Main function to render all content
+        function renderPage() {
+            const data = loadAndCalculateMetrics();
+            
+            // 1. Render Key Metrics
+            document.getElementById('currentStreak').textContent = data.metrics.currentStreak;
+            document.getElementById('bestStreak').textContent = data.metrics.bestStreak;
+            document.getElementById('totalWordsLearned').textContent = data.metrics.totalWordsLearned;
+            document.getElementById('overallCompletion').textContent = `${data.metrics.overallCompletion}%`;
+            
+            // 2. Render Heatmap
+            renderHeatmap(data.activity);
+            
+            // 3. Render Level Status
+            renderLevels(data.levels);
+        }
+
+        function endSpeedSignGame(correctStreak) {
+    // correctStreak = current streak from the game session
+    
+    // 1. Save current streak
+    localStorage.setItem('latestGameStreak', correctStreak);
+
+    // 2. Update best streak if needed
+    const bestStreak = parseInt(localStorage.getItem('bestGameStreak') || 0);
+    if (correctStreak > bestStreak) {
+        localStorage.setItem('bestGameStreak', correctStreak);
+    }
+
+    // Optional: redirect to progress page after game ends
+    window.location.href = '/progress'; 
+}
+
+
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', renderPage);
+    </script>
+
+
+    <!-- --- Top Navigation Bar (Ishario) --- -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <!-- Logo/Title: Ishario -->
+                <div class="flex-shrink-0 flex items-center">
+                    <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+                        <i class="fas fa-book-open mr-2"></i>
+                        Ishario 
+                    </button>
+                </div>
+                
+                <!-- Right Side: Navigation/User Icons -->
+                <div class="flex items-center space-x-4 text-xl text-gray-400">
+                    <button onclick="navigateTo('dashboard')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                        <i class="fas fa-arrow-left mr-1"></i> Dashboard
+                    </button>
+                    <div class="flex items-center space-x-4 text-xl text-gray-400">
+          <i class="fas fa-user-circle cursor-pointer hover:text-purple-600" onclick="navigateTo('profile')"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- --- Main Content Area --- -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Header -->
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-2">
+            Your Learning Progress 📊
+        </h1>
+        <p class="text-gray-500 mb-8">Visual representation of your activity, milestones, and consistency.</p>
+
+        <!-- --- SECTION 1: Key Metrics --- -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            
+            <!-- Current Streak (Updated from Game Logic) -->
+            <div class="bg-white p-6 rounded-xl progress-card flex items-center justify-between border border-gray-100">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Current Streak</p>
+                    <p id="currentStreak" class="text-3xl font-bold text-gray-800"></p>
+                </div>
+                <div class="text-3xl">🔥</div>
+            </div>
+
+            <!-- Best Streak -->
+            <div class="bg-white p-6 rounded-xl progress-card flex items-center justify-between border border-gray-100">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Best Streak</p>
+                    <p id="bestStreak" class="text-3xl font-bold text-gray-800"></p>
+                </div>
+                <div class="text-3xl">🏆</div>
+            </div>
+
+            <!-- Total Words Learned (Dynamically Calculated) -->
+            <div class="bg-white p-6 rounded-xl progress-card flex items-center justify-between border border-gray-100">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Total Words Learned</p>
+                    <p id="totalWordsLearned" class="text-3xl font-bold text-gray-800"></p>
+                </div>
+                <div class="text-3xl">📖</div>
+            </div>
+
+            <!-- Global Progress (Dynamically Calculated) -->
+            <div class="bg-white p-6 rounded-xl progress-card flex items-center justify-between border border-gray-100">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Overall Completion</p>
+                    <p id="overallCompletion" class="text-3xl font-bold main-gradient-text"></p>
+                </div>
+                <div class="text-3xl text-purple-500">📈</div>
+            </div>
+        </div>
+
+        <!-- --- SECTION 2: Daily Activity Heatmap --- -->
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Daily Activity Heatmap</h2>
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 mb-12">
+            <p class="text-sm text-gray-500 mb-4">Consistency is key! Days colored darker indicate more learning activity (Last 90 days).</p>
+            <div id="heatmapContainer" class="heatmap-grid overflow-x-auto p-2">
+                <!-- Heatmap squares injected here by JavaScript -->
+            </div>
+            <div class="flex justify-between text-xs text-gray-400 mt-4 px-2">
+                <span>Less Activity</span>
+                <span>More Activity</span>
+            </div>
+        </div>
+
+        <!-- --- SECTION 3: Structured Path Status --- -->
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Structured Path Status</h2>
+        <div id="levelStatusContainer" class="space-y-6">
+            <!-- Level progress cards injected here by JavaScript -->
+        </div>
+
+    </div>
+</body>
+</html>

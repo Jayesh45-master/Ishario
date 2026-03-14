@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Themed Vocabulary Quiz</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8fc;
+            min-height: 100vh;
+        }
+
+        /* Gradient Text Style for Ishario Logo */
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Option Button Styling */
+        .quiz-option {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .quiz-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .quiz-option.selected {
+            border-color: #4f46e5; /* Indigo */
+            box-shadow: 0 0 0 2px #4f46e5;
+        }
+        .quiz-option.correct {
+            background-color: #d1fae5; /* Light Green */
+            border-color: #10b981; /* Green */
+            font-weight: 600;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2; /* Light Red */
+            border-color: #ef4444; /* Red */
+        }
+        
+        .cta-button {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            box-shadow: 0 4px 6px rgba(138, 43, 226, 0.3);
+        }
+        
+        .sign-image-placeholder {
+            width: 100%;
+            height: 180px; 
+            object-fit: contain;
+            background-color: #fff9e6; /* Light Yellow/Advanced Theme */
+            border-radius: 8px;
+            border: 1px solid #fde68a;
+        }
+
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <script>
+        // --- Game Data ---
+        // Image URLs updated to point to the /static/signs/ folder
+        const quizData = [
+            {
+                id: 1,
+                theme: "Medical",
+                signWord: "EMERGENCY",
+                imageUrl: "/static/signs/Emergency.png",
+                question: "What does this sign represent?",
+                correctAnswer: "Immediate need for help (Medical/Police)",
+                options: [
+                    "Asking for directions to the Hospital",
+                    "Immediate need for help (Medical/Police)",
+                    "A specific type of doctor",
+                    "A traffic accident"
+                ]
+            },
+            {
+                id: 2,
+                theme: "Travel",
+                signWord: "AIRPLANE",
+                imageUrl: "/static/signs/Airplane.png",
+                question: "Which word matches this sign?",
+                correctAnswer: "Airplane",
+                options: ["Ticket", "Luggage", "Airplane", "Bus"]
+            },
+            {
+                id: 3,
+                theme: "Education",
+                signWord: "TEACHER",
+                imageUrl: "/static/signs/Teacher.png",
+                question: "Select the meaning of the displayed sign.",
+                correctAnswer: "Teacher",
+                options: ["Student", "School", "Book", "Teacher"]
+            }
+        ];
+        
+        // --- Game State ---
+        let currentQuizIndex = -1;
+        let score = 0;
+        let questionsAnswered = 0;
+        let selectedAnswer = null;
+        let quizRunning = false;
+        
+        // --- Helper Functions ---
+        function navigateTo(page) {
+            // Ensures navigation works with server-side routing (Flask compatibility)
+            window.location.href = `/${page}`; 
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        
+        function showMessage(text, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = text;
+            messageBox.className = `fixed top-20 left-1/2 transform -translate-x-1/2 p-4 rounded-lg text-white shadow-xl z-50`;
+            
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-500');
+            } else if (type === 'error') {
+                messageBox.classList.add('bg-red-500');
+            } else {
+                messageBox.classList.add('bg-gray-700');
+            }
+            
+            messageBox.style.opacity = 1;
+            setTimeout(() => {
+                messageBox.style.opacity = 0;
+            }, 2500);
+        }
+
+        // --- Game Flow ---
+
+        function loadQuestion() {
+            if (questionsAnswered >= quizData.length) {
+                endGame();
+                return;
+            }
+
+            // Move to the next question
+            currentQuizIndex++;
+            const questionData = quizData[currentQuizIndex];
+
+            // Reset state
+            selectedAnswer = null;
+            document.getElementById('checkButton').disabled = false;
+            document.getElementById('checkButton').textContent = "Check Answer";
+            
+            // Render question details
+            document.getElementById('questionCount').textContent = `${currentQuizIndex + 1}/${quizData.length}`;
+            document.getElementById('questionText').textContent = questionData.question;
+            document.getElementById('signImage').src = questionData.imageUrl;
+            document.getElementById('signImage').alt = `Sign for ${questionData.signWord}`;
+            
+            renderOptions(questionData);
+            updateScoreboard();
+        }
+
+        function renderOptions(data) {
+            const optionsContainer = document.getElementById('optionsContainer');
+            let optionsHtml = '';
+            
+            // Create a temporary shuffled array of options
+            const shuffledOptions = [...data.options];
+            shuffleArray(shuffledOptions);
+
+            shuffledOptions.forEach((option, index) => {
+                optionsHtml += `
+                    <div id="option-${index}" 
+                         class="quiz-option bg-white p-4 rounded-xl border-2 border-gray-200" 
+                         onclick="selectAnswer('${option}', this)">
+                        <p class="text-lg font-medium text-gray-700">${option}</p>
+                    </div>
+                `;
+            });
+            optionsContainer.innerHTML = optionsHtml;
+        }
+
+        function selectAnswer(answer, element) {
+            if (document.getElementById('checkButton').disabled) return; // Prevent selection after check
+
+            // Deselect all other options
+            document.querySelectorAll('.quiz-option').forEach(el => {
+                el.classList.remove('selected');
+                el.classList.remove('correct', 'incorrect'); // Clear previous visual feedback
+            });
+
+            // Select the clicked option
+            element.classList.add('selected');
+            selectedAnswer = answer;
+        }
+
+        function checkAnswer() {
+            if (selectedAnswer === null) {
+                showMessage("Please select an answer first.", 'error');
+                return;
+            }
+            
+            const currentQuestion = quizData[currentQuizIndex];
+            const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
+            
+            document.getElementById('checkButton').disabled = true;
+            questionsAnswered++;
+            
+            document.querySelectorAll('.quiz-option').forEach(el => {
+                const optionText = el.querySelector('p').textContent;
+                el.classList.remove('selected'); // Clear selection highlight
+
+                if (optionText === currentQuestion.correctAnswer) {
+                    el.classList.add('correct');
+                }
+                if (optionText === selectedAnswer && !isCorrect) {
+                    el.classList.add('incorrect');
+                }
+                // Disable further clicking until next question loads
+                el.onclick = null;
+            });
+
+            if (isCorrect) {
+                score++;
+                showMessage("Correct!", 'success');
+            } else {
+                showMessage("Incorrect. The correct answer is highlighted.", 'error');
+            }
+            
+            updateScoreboard();
+            
+            // Load next question after a delay
+            setTimeout(loadQuestion, 2500);
+        }
+
+        function updateScoreboard() {
+             document.getElementById('currentScore').textContent = score;
+        }
+
+        function startGame() {
+            currentQuizIndex = -1;
+            score = 0;
+            questionsAnswered = 0;
+            
+            document.getElementById('gameArea').classList.remove('hidden');
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
+            
+            updateScoreboard();
+            loadQuestion();
+        }
+
+        function endGame() {
+            document.getElementById('gameArea').classList.add('hidden');
+            document.getElementById('endScreen').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('totalQuestions').textContent = quizData.length;
+        }
+
+        // Initial setup on load
+        document.addEventListener('DOMContentLoaded', () => {
+             document.getElementById('gameArea').classList.add('hidden');
+             document.getElementById('endScreen').classList.add('hidden');
+        });
+    </script>
+
+
+    <!-- Global Message Box (for alerts/messages) -->
+    <div id="messageBox" class="fixed top-20 left-1/2 transform -translate-x-1/2 p-4 rounded-lg text-white shadow-xl z-50 opacity-0 transition-opacity duration-300"></div>
+
+    <!-- --- Top Navigation Bar (Ishario) --- -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+                        <i class="fas fa-book-open mr-2"></i> Ishario 
+                    </button>
+                </div>
+                <div class="flex items-center space-x-4 text-xl text-gray-400">
+                    <button onclick="navigateTo('games')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                        <i class="fas fa-arrow-left mr-1"></i> Arcade
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- --- Main Content Area --- -->
+    <div class="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        
+        <!-- --- 1. START SCREEN --- -->
+        <div id="startScreen" class="bg-white p-8 rounded-xl shadow-2xl max-w-xl mx-auto text-center">
+            <div class="w-20 h-20 bg-yellow-100 text-yellow-600 rounded-full inline-flex items-center justify-center text-4xl mb-4">
+                <i class="fas fa-puzzle-piece"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold text-gray-800 mb-2">Themed Vocabulary Quiz</h1>
+            <p class="text-gray-500 mb-6">Specialized quizzes covering Medical, Travel, and Education sign vocabulary.</p>
+            
+            <button onclick="startGame()" class="px-8 py-3 rounded-xl text-white font-semibold cta-button hover:opacity-90 transition duration-150">
+                Start Quiz <i class="fas fa-play ml-2"></i>
+            </button>
+        </div>
+
+        <!-- --- 2. GAME AREA --- -->
+        <div id="gameArea" class="hidden max-w-3xl mx-auto">
+            <!-- Scoreboard -->
+            <div class="flex justify-between items-center mb-6 p-4 bg-white rounded-xl shadow-lg border border-gray-100">
+                <div class="text-lg font-semibold text-gray-700">
+                    Question: <span id="questionCount" class="main-gradient-text font-extrabold">1/3</span>
+                </div>
+                <div class="text-lg font-semibold text-gray-700">
+                    Score: <span id="currentScore" class="text-green-600 font-extrabold">0</span>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white p-6 rounded-xl shadow-2xl mb-8">
+                <p class="text-lg font-medium text-gray-600 mb-4">Question:</p>
+                <h2 id="questionText" class="text-2xl font-bold text-gray-800 mb-6"></h2>
+                
+                <!-- Sign Image -->
+                <div class="text-center mb-6">
+                    <img id="signImage" class="sign-image-placeholder mx-auto" src="" alt="Sign for Quiz">
+                </div>
+
+                <!-- Answer Options -->
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Select the best fit:</h3>
+                <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+
+            <!-- Action Button -->
+             <button id="checkButton" onclick="checkAnswer()" class="w-full py-3 rounded-xl text-white font-semibold cta-button hover:opacity-90 transition duration-150">
+                Check Answer
+            </button>
+        </div>
+
+        <!-- --- 3. END SCREEN --- -->
+        <div id="endScreen" class="hidden bg-white p-8 rounded-xl shadow-2xl max-w-xl mx-auto text-center">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Quiz Finished! 🎉</h1>
+            <p class="text-xl text-gray-600 mb-6">You scored:</p>
+            <p id="finalScore" class="text-6xl font-extrabold main-gradient-text mb-2">0 / <span id="totalQuestions">3</span></p>
+
+            <button onclick="startGame()" class="px-8 py-3 rounded-xl text-white font-semibold cta-button hover:opacity-90 transition duration-150 mr-4">
+                Play Again <i class="fas fa-sync-alt ml-2"></i>
+            </button>
+            <button onclick="navigateTo('games')" class="px-8 py-3 rounded-xl text-gray-600 font-semibold bg-gray-100 hover:bg-gray-200 transition duration-150">
+                Back to Arcade
+            </button>
+        </div>
+
+    </div>
+</body>
+</html>

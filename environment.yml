@@ -1,0 +1,19 @@
+name: ishario
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - Flask==2.3.3
+      - Flask-Bcrypt==1.0.1
+      - Flask-Cors==4.0.0
+      - Flask-JWT-Extended==4.6.0
+      - Flask-Mail==0.9.1
+      - python-dotenv==1.0.1
+      - numpy==1.26.4
+      - opencv-python==4.9.0.80
+      - mediapipe==0.10.14
+      - tensorflow==2.15.0
+      - h5py==3.10.0
+      - mysql-connector-python==8.3.0
