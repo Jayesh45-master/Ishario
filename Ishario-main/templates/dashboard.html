@@ -498,9 +498,38 @@
             document.getElementById('chatMessages').appendChild(typing);
         }
 
-        function botReply(text) {
-            text = text.toLowerCase();
+        async function botReply(text) {
+            const lower = (text || '').toLowerCase();
             let reply = '';
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                const out = await res.json();
+                if (res.ok && out && out.reply) {
+                    reply = out.reply;
+                } else {
+                    reply = (out && (out.detail || out.error)) ? `AI error: ${out.detail || out.error}` : 'AI is unavailable right now.';
+                }
+            } catch (e) {
+                if (lower.includes('hello') || lower.includes('hi')) reply = 'Hello! How can I help you today?';
+                else if (lower.includes('learn')) reply = 'You can start learning from Level 1 Basics in your learning path.';
+                else if (lower.includes('practice')) reply = 'Use Live Interaction to practice signs with your webcam.';
+                else reply = 'I\\'m here to help you learn sign language using Ishario.';
+            }
+
+            const typing = document.getElementById('typing');
+            if (typing) typing.remove();
+
+            const botMsg = document.createElement('div');
+            botMsg.className = 'bot-message';
+            botMsg.innerText = reply;
+            document.getElementById('chatMessages').appendChild(botMsg);
+            scrollChat();
+            return;
 
             if (text.includes('hello') || text.includes('hi')) {
                 reply = 'Hello! 😊 How can I assist you with learning sign language today?';

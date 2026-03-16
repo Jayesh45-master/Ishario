@@ -59,7 +59,19 @@ cd Ishario-main
 python admin.py
 ```
 
+### 4) AI Chatbot (optional)
+
+The dashboard includes an AI Tutor chat widget that calls the backend `/api/chat` endpoint.
+
+Set:
+
+```powershell
+$env:OPENAI_API_KEY="your_key_here"
+# optional:
+$env:OPENAI_MODEL="gpt-4o-mini"
+```
+
 ### Common fixes
 
 - **`Access denied for user 'root'@'localhost'`**: set the correct `*_DB_USER` / `*_DB_PASS` and run `python scripts/init_mysql.py`.
-- **Missing `model.h5`**: ML is optional; `/predict` needs a trained model. Set `ISHARIO_MODEL_PATH` to point to your model file if it isn’t in the working directory.
+- **Missing `model.h5`**: ML is optional; `/predict` needs a trained model. Set `ISHARIO_MODEL_PATH` to point to your model file if it isn't in the working directory.
