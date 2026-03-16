@@ -729,6 +729,34 @@ def sign_to_text():
         return jsonify({"error": "No valid images processed"}), 400
     return jsonify({"text": " ".join(recognized_texts)}), 200
 
+# ---------- Chatbot API ----------
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    """
+    Expects JSON:
+    {
+        "message": "User's message"
+    }
+    Returns:
+    {
+        "reply": "Chatbot's reply"
+    }
+    """
+    data = request.get_json()
+    user_message = data.get('message', '').strip()
+    if not user_message:
+        return jsonify({"error": "No message provided"}), 400
+
+    # Placeholder logic: echo or simple response
+    # Replace with real AI model or API call
+    if 'hello' in user_message.lower():
+        reply = "Hello! How can I assist you with sign language today?"
+    elif 'help' in user_message.lower():
+        reply = "Sure, I can help. Ask me about signs, tutorials, or your progress."
+    else:
+        reply = f"You said: {user_message} (Chatbot logic to be improved)"
+
+    return jsonify({"reply": reply})
 # ---------- Run App ----------
 if __name__ == "__main__":
     # DEBUG only: ensure mail creds provided
