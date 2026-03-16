@@ -3,6 +3,9 @@ import os
 import io
 import random
 import string
+import time
+import threading
+from collections import Counter, deque
 import numpy as np
 import mysql.connector
 from datetime import datetime
@@ -33,6 +36,8 @@ except ImportError:
     tf = None
 
 import base64
+
+import requests
 
 from ishario.db import (
     DbUnavailable,
@@ -163,9 +168,18 @@ model = None
 if tf is None:
     print("[WARN] TensorFlow is not installed; ML prediction endpoints will be disabled.")
 else:
-    model_path = os.environ.get("ISHARIO_MODEL_PATH", "model.h5")
-    if not os.path.exists(model_path):
-        print(f"[WARN] Model not found at {model_path}; /predict will be unavailable until a model exists.")
+    configured_path = os.environ.get("ISHARIO_MODEL_PATH") or ""
+    candidates = [
+        configured_path,
+        os.path.join(os.getcwd(), "model.h5"),
+        os.path.join(BASE_DIR, "model.h5"),
+        os.path.abspath(os.path.join(BASE_DIR, "..", "model.h5")),
+    ]
+    candidates = [p for p in candidates if p]
+    model_path = next((p for p in candidates if os.path.exists(p)), "")
+
+    if not model_path:
+        print("[WARN] Model not found. Set ISHARIO_MODEL_PATH or place model.h5 in the app folder (or repo root).")
         model = None
     else:
         try:
@@ -205,60 +219,249 @@ else:
         print("[WARN] Hand tracking will be skipped, but prediction endpoint may still work")
         hands = None
 
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY") or ""
+OPENAI_BASE_URL = os.environ.get("OPENAI_BASE_URL") or "https://api.openai.com/v1"
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL") or "gpt-4o-mini"
+
+LIVE_STATE = {}
+CHAT_STATE = {}
+STATE_LOCK = threading.Lock()
+
+
+def _get_client_id() -> str:
+    client_id = session.get("client_id")
+    if not client_id:
+        client_id = os.urandom(16).hex()
+        session["client_id"] = client_id
+    return client_id
+
+
+def _get_state(bucket: dict, client_id: str, factory):
+    now = time.time()
+    with STATE_LOCK:
+        state = bucket.get(client_id)
+        if state is None:
+            state = factory()
+            bucket[client_id] = state
+        state["last_seen"] = now
+        # Best-effort cleanup
+        if len(bucket) > 500:
+            stale = [k for k, v in bucket.items() if now - v.get("last_seen", now) > 1800]
+            for k in stale[:200]:
+                bucket.pop(k, None)
+    return state
+
+
+def _decode_image_payload(image_b64: str):
+    if not image_b64:
+        raise ValueError("Missing image")
+    if "," in image_b64 and image_b64.strip().lower().startswith("data:image"):
+        image_b64 = image_b64.split(",", 1)[1]
+    img_bytes = base64.b64decode(image_b64)
+    nparr = np.frombuffer(img_bytes, np.uint8)
+    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    if frame is None:
+        raise ValueError("Invalid image payload")
+    return frame
+
+
+def _hand_bbox_from_landmarks(landmarks, w: int, h: int, margin: float = 0.18):
+    xs = [lm.x for lm in landmarks]
+    ys = [lm.y for lm in landmarks]
+    x1 = max(min(xs) - margin, 0.0)
+    y1 = max(min(ys) - margin, 0.0)
+    x2 = min(max(xs) + margin, 1.0)
+    y2 = min(max(ys) + margin, 1.0)
+    return int(x1 * w), int(y1 * h), int(x2 * w), int(y2 * h)
+
+
+def _predict_frame(frame):
+    # Returns (label, confidence, note)
+    if model is None:
+        raise RuntimeError("Model not loaded")
+
+    roi = frame
+    note = "full_frame"
+
+    if hands is not None:
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = hands.process(rgb)
+        if results.multi_hand_landmarks:
+            h, w = frame.shape[:2]
+            x1, y1, x2, y2 = _hand_bbox_from_landmarks(results.multi_hand_landmarks[0], w, h)
+            if x2 > x1 and y2 > y1:
+                roi = frame[y1:y2, x1:x2]
+                note = "hand_roi"
+
+    img = cv2.resize(roi, (64, 64))
+    img = img / 255.0
+    img = np.expand_dims(img, axis=0)
+
+    prediction = model.predict(img, verbose=0)[0]
+    idx = int(np.argmax(prediction))
+    conf = float(prediction[idx])
+    label = labels[idx] if 0 <= idx < len(labels) else str(idx)
+    return label, conf, note
+
+
+def _live_factory():
+    return {
+        "preds": deque(maxlen=10),  # list[(label, conf)]
+        "stable": None,
+        "stable_since": 0.0,
+        "text": "",
+        "last_append": 0.0,
+        "last_seen": 0.0,
+    }
+
+
+def _update_live_state(state, label: str, conf: float):
+    now = time.time()
+    min_conf = float(os.environ.get("LIVE_MIN_CONF", "0.60"))
+    state["preds"].append((label, conf))
+
+    recent = [(l, c) for (l, c) in state["preds"] if c >= min_conf]
+    if not recent:
+        return {"stable": None, "stable_conf": 0.0, "text": state["text"]}
+
+    counts = Counter(l for (l, _) in recent)
+    stable_label, stable_count = counts.most_common(1)[0]
+    stable_conf = sum(c for (l, c) in recent if l == stable_label) / max(1, sum(1 for (l, c) in recent if l == stable_label))
+
+    if state["stable"] != stable_label:
+        state["stable"] = stable_label
+        state["stable_since"] = now
+
+    # Debounced text building
+    debounce_s = float(os.environ.get("LIVE_DEBOUNCE_S", "0.9"))
+    hold_s = float(os.environ.get("LIVE_HOLD_S", "0.6"))
+    if now - state["stable_since"] >= hold_s and now - state["last_append"] >= debounce_s:
+        state["text"] = (state["text"] + " " + stable_label).strip()
+        state["last_append"] = now
+
+    return {"stable": stable_label, "stable_conf": float(stable_conf), "text": state["text"]}
+
 @app.route("/predict", methods=["POST"])
 def predict():
-    # Check if model is loaded
     if model is None:
-        return jsonify({"error": "Model not loaded. Please train the model first using: python train_model.py"}), 500
-
+        return jsonify({"error": "model_not_loaded", "hint": "Set ISHARIO_MODEL_PATH or place model.h5 next to the app."}), 503
     if cv2 is None:
-        return jsonify({"error": "OpenCV (cv2) is not installed; cannot process images."}), 500
-    
-    # Check if hands tracker is initialized (optional now)
-    if hands is None:
-        # Proceed without hand detection - just process the image directly
+        return jsonify({"error": "opencv_missing", "hint": "Install opencv-python."}), 503
+
+    payload = request.get_json(silent=True) or {}
+    image_b64 = payload.get("image") or ""
+
+    try:
+        frame = _decode_image_payload(image_b64)
+    except Exception as e:
+        return jsonify({"error": "bad_image", "detail": str(e)}), 400
+
+    try:
+        label, conf, note = _predict_frame(frame)
+    except Exception as e:
+        return jsonify({"error": "predict_failed", "detail": str(e)}), 500
+
+    client_id = _get_client_id()
+    live_state = _get_state(LIVE_STATE, client_id, _live_factory)
+    stable = _update_live_state(live_state, label, conf)
+
+    return jsonify(
+        {
+            "gesture": label,
+            "confidence": conf,
+            "note": note,
+            "stable_gesture": stable.get("stable"),
+            "stable_confidence": stable.get("stable_conf"),
+            "text": stable.get("text", ""),
+        }
+    )
+
+
+@app.route("/api/live/reset", methods=["POST"])
+def live_reset():
+    client_id = _get_client_id()
+    with STATE_LOCK:
+        LIVE_STATE.pop(client_id, None)
+    return jsonify({"ok": True})
+
+
+def _chat_factory():
+    return {"messages": deque(maxlen=20), "last_seen": 0.0}
+
+
+def _openai_chat(messages):
+    if not OPENAI_API_KEY:
+        raise RuntimeError("OPENAI_API_KEY not set")
+
+    url = f"{OPENAI_BASE_URL.rstrip('/')}/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    body = {
+        "model": OPENAI_MODEL,
+        "messages": messages,
+        "temperature": 0.2,
+    }
+    resp = requests.post(url, headers=headers, json=body, timeout=25)
+    if resp.status_code != 200:
+        raise RuntimeError(f"OpenAI error {resp.status_code}: {resp.text[:300]}")
+    data = resp.json()
+    return (data.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
+
+
+@app.route("/api/chat", methods=["POST"])
+def api_chat():
+    payload = request.get_json(silent=True) or {}
+    message = (payload.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "missing_message"}), 400
+
+    if not OPENAI_API_KEY:
+        return jsonify({"error": "openai_not_configured", "hint": "Set OPENAI_API_KEY (and optionally OPENAI_MODEL)."}), 503
+
+    client_id = _get_client_id()
+    chat_state = _get_state(CHAT_STATE, client_id, _chat_factory)
+
+    system_prompt = (
+        "You are Ishario AI Tutor, a helpful assistant that teaches sign language and helps users navigate Ishario. "
+        "Be concise, practical, and friendly. If the user asks for a sign, describe the gesture step-by-step in text."
+    )
+
+    history = list(chat_state["messages"])
+    messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": message}]
+
+    try:
+        reply = _openai_chat(messages)
+        if not reply:
+            reply = "I couldn't generate a response right now. Please try again."
+    except Exception as e:
+        return jsonify({"error": "chat_failed", "detail": str(e)}), 500
+
+    chat_state["messages"].append({"role": "user", "content": message})
+    chat_state["messages"].append({"role": "assistant", "content": reply})
+
+    # Best-effort persistence (optional DB)
+    user_email = get_logged_in_email()
+    if user_email:
         try:
-            data = request.json["image"]
-            img_bytes = base64.b64decode(data)
-            nparr = np.frombuffer(img_bytes, np.uint8)
-            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-            
-            # Process without hand detection
-            img = cv2.resize(frame, (64, 64))
-            img = img / 255.0
-            img = np.expand_dims(img, axis=0)
-            
-            prediction = model.predict(img, verbose=0)
-            label = labels[np.argmax(prediction)]
-            
-            return jsonify({"gesture": label, "note": "Processed without hand detection"})
-        except Exception as e:
-            return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
+            conn = get_db_connection(ISHARIO_DB_CONFIG, "ISHARIO_DB")
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO chat_messages (user_email, role, content) VALUES (%s, %s, %s)",
+                (user_email, "user", message),
+            )
+            cursor.execute(
+                "INSERT INTO chat_messages (user_email, role, content) VALUES (%s, %s, %s)",
+                (user_email, "assistant", reply),
+            )
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception:
+            pass
 
-    data = request.json["image"]
-
-    img_bytes = base64.b64decode(data)
-    nparr = np.frombuffer(img_bytes, np.uint8)
-
-    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-    results = hands.process(rgb)
-
-    if results.multi_hand_landmarks:
-
-        img = cv2.resize(frame,(64,64))
-        img = img/255.0
-        img = np.expand_dims(img,axis=0)
-
-        prediction = model.predict(img)
-
-        label = labels[np.argmax(prediction)]
-
-        return jsonify({"gesture":label})
-
-    return jsonify({"gesture":"No Hand Detected"})
+    return jsonify({"reply": reply})
 
 def get_sign_image(word):
     # 1) Check local static folder for common extensions

@@ -49,3 +49,21 @@ CREATE TABLE IF NOT EXISTS admin (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS gesture_history (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_email VARCHAR(255) NULL,
+  gesture VARCHAR(255) NOT NULL,
+  confidence FLOAT NULL,
+  source VARCHAR(50) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_gesture_history_user_email (user_email)
+);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_email VARCHAR(255) NULL,
+  role VARCHAR(20) NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_chat_messages_user_email (user_email)
+);
