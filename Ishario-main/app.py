@@ -5,9 +5,12 @@ import os
 import io
 import random
 import string
+import sys
 import time
 import threading
+import json
 from collections import Counter, deque
+from pathlib import Path
 import numpy as np
 import mysql.connector
 from datetime import datetime
@@ -41,6 +44,16 @@ import base64
 
 import requests
 
+# ---------- App Directory + .env ----------
+# Ensure local packages (e.g. `ishario/`) are importable even when this file is executed via runpy or other loaders.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+# Load .env from repo root (preferred) and app folder (fallback). Do not override real env vars.
+load_dotenv(dotenv_path=Path(BASE_DIR).parent / ".env", override=False)
+load_dotenv(dotenv_path=Path(BASE_DIR) / ".env", override=False)
+load_dotenv(override=False)
 from ishario.db import (
     DbUnavailable,
     connect_mysql,
@@ -166,6 +179,54 @@ def convert_blob_to_image(blob_data):
         return None
 
 # ---------- Load Model with Error Handling ----------
+def _strip_keras3_compat_fields(value):
+    if isinstance(value, dict):
+        cleaned = {}
+        for key, child in value.items():
+            if key in {"quantization_config", "optional"} and child is None:
+                continue
+            if key == "optional":
+                continue
+            cleaned[key] = _strip_keras3_compat_fields(child)
+        return cleaned
+    if isinstance(value, list):
+        return [_strip_keras3_compat_fields(item) for item in value]
+    return value
+
+
+def _load_model_with_compat(model_path: str):
+    try:
+        return tf.keras.models.load_model(model_path, compile=False)
+    except Exception as load_error:
+        compat_markers = ("quantization_config", "optional", "batch_shape")
+        if not any(marker in str(load_error) for marker in compat_markers):
+            raise
+
+        try:
+            import h5py
+        except ImportError:
+            raise load_error
+
+        with h5py.File(model_path, "r") as handle:
+            model_config_raw = handle.attrs.get("model_config")
+            if not model_config_raw:
+                raise load_error
+            if isinstance(model_config_raw, bytes):
+                model_config_raw = model_config_raw.decode("utf-8")
+            model_config = json.loads(model_config_raw)
+            model_config = _strip_keras3_compat_fields(model_config)
+
+        model = tf.keras.models.model_from_json(
+            json.dumps(model_config),
+            custom_objects={
+                "Sequential": tf.keras.Sequential,
+                "DTypePolicy": tf.keras.mixed_precision.Policy,
+            },
+        )
+        model.load_weights(model_path)
+        return model
+
+
 model = None
 if tf is None:
     print("[WARN] TensorFlow is not installed; ML prediction endpoints will be disabled.")
@@ -185,7 +246,7 @@ else:
         model = None
     else:
         try:
-            model = tf.keras.models.load_model(model_path, compile=False)
+            model = _load_model_with_compat(model_path)
             print(f"[OK] Model loaded successfully from {model_path}")
         except Exception as e:
             print(f"[ERROR] Failed to load model at {model_path}: {e}")
@@ -202,12 +263,20 @@ if mp is None:
     print("[WARN] MediaPipe is not installed; hand tracking will be skipped.")
 else:
     try:
+        import importlib.util
         # Prefer stable import paths across different MediaPipe distributions.
         try:
-            mp_hands = mp.solutions.hands  # type: ignore[attr-defined]
+            if hasattr(mp, "solutions"):
+                mp_hands = mp.solutions.hands  # type: ignore[attr-defined]
         except Exception:
+            mp_hands = None
+
+        if mp_hands is None and importlib.util.find_spec("mediapipe.python.solutions.hands"):
             from mediapipe.python.solutions import hands as mp_hands_solution
             mp_hands = mp_hands_solution
+
+        if mp_hands is None:
+            raise ImportError("MediaPipe Hands module not found")
 
         hands = mp_hands.Hands(
             static_image_mode=False,
@@ -980,4 +1049,10 @@ if __name__ == "__main__":
     print("=" * 60 + "\n")
     
     app.run(debug=True)
+
+
+
+
+
+
 
