@@ -1,4 +1,4 @@
-from dotenv import load_dotenv
+﻿from dotenv import load_dotenv
 load_dotenv()
 # log.py
 import os
@@ -202,13 +202,12 @@ if mp is None:
     print("[WARN] MediaPipe is not installed; hand tracking will be skipped.")
 else:
     try:
-        # Try the newer MediaPipe API
+        # Prefer stable import paths across different MediaPipe distributions.
         try:
-            from mediapipe.solutions import hands as mp_hands_solution
+            mp_hands = mp.solutions.hands  # type: ignore[attr-defined]
+        except Exception:
+            from mediapipe.python.solutions import hands as mp_hands_solution
             mp_hands = mp_hands_solution
-        except ImportError:
-            # Fallback for older versions or alternative import
-            mp_hands = mp.solutions.hands
 
         hands = mp_hands.Hands(
             static_image_mode=False,
@@ -981,3 +980,4 @@ if __name__ == "__main__":
     print("=" * 60 + "\n")
     
     app.run(debug=True)
+
