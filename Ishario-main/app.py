@@ -254,6 +254,8 @@ else:
             model = None
 
 labels = ["Hello","Thank You","Yes","No","Help","Good","Goodbye","Please"]
+NO_SIGN_DETECTED = "No Sign Detected"
+DATASET_MATCH_CACHE = {"signature": None, "items": []}
 
 # ---------- Initialize MediaPipe Hands ----------
 mp_hands = None
@@ -336,8 +338,9 @@ def _decode_image_payload(image_b64: str):
 
 
 def _hand_bbox_from_landmarks(landmarks, w: int, h: int, margin: float = 0.18):
-    xs = [lm.x for lm in landmarks]
-    ys = [lm.y for lm in landmarks]
+    point_list = getattr(landmarks, "landmark", landmarks)
+    xs = [lm.x for lm in point_list]
+    ys = [lm.y for lm in point_list]
     x1 = max(min(xs) - margin, 0.0)
     y1 = max(min(ys) - margin, 0.0)
     x2 = min(max(xs) + margin, 1.0)
@@ -345,11 +348,96 @@ def _hand_bbox_from_landmarks(landmarks, w: int, h: int, margin: float = 0.18):
     return int(x1 * w), int(y1 * h), int(x2 * w), int(y2 * h)
 
 
+def _normalize_match_image(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(image.shape) == 3 else image
+    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+    gray = cv2.resize(gray, (256, 256))
+    gray = cv2.equalizeHist(gray)
+    return gray
+
+
+def _dataset_signature():
+    paths = []
+    for ext in ("*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif"):
+        paths.extend(sorted(Path(SIGNS_FOLDER).glob(ext)))
+    return tuple((str(path), path.stat().st_mtime_ns) for path in paths)
+
+
+def _load_dataset_match_cache():
+    signature = _dataset_signature()
+    if DATASET_MATCH_CACHE["signature"] == signature:
+        return DATASET_MATCH_CACHE["items"]
+
+    orb = cv2.ORB_create(nfeatures=700)
+    items = []
+    for path_str, _ in signature:
+        path = Path(path_str)
+        image = cv2.imread(str(path), cv2.IMREAD_COLOR)
+        if image is None:
+            continue
+        normalized = _normalize_match_image(image)
+        keypoints, descriptors = orb.detectAndCompute(normalized, None)
+        if descriptors is None or len(keypoints) < 10:
+            continue
+        items.append(
+            {
+                "label": path.stem,
+                "descriptors": descriptors,
+                "keypoints": len(keypoints),
+            }
+        )
+
+    DATASET_MATCH_CACHE["signature"] = signature
+    DATASET_MATCH_CACHE["items"] = items
+    return items
+
+
+def _match_dataset_sign(image):
+    dataset_items = _load_dataset_match_cache()
+    if not dataset_items:
+        raise RuntimeError("No dataset sign images available in static/signs")
+
+    orb = cv2.ORB_create(nfeatures=700)
+    normalized = _normalize_match_image(image)
+    keypoints, descriptors = orb.detectAndCompute(normalized, None)
+    min_keypoints = int(os.environ.get("LIVE_MIN_KEYPOINTS", "12"))
+    if descriptors is None or len(keypoints) < min_keypoints:
+        return NO_SIGN_DETECTED, 0.0, "insufficient_features"
+
+    matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=False)
+    ratio_threshold = float(os.environ.get("LIVE_RATIO_TEST", "0.75"))
+    similarity_threshold = float(os.environ.get("LIVE_MATCH_THRESHOLD", "0.18"))
+    min_good_matches = int(os.environ.get("LIVE_MIN_MATCHES", "14"))
+
+    best_label = NO_SIGN_DETECTED
+    best_score = 0.0
+
+    for item in dataset_items:
+        raw_matches = matcher.knnMatch(descriptors, item["descriptors"], k=2)
+        good_matches = []
+        for pair in raw_matches:
+            if len(pair) < 2:
+                continue
+            first, second = pair
+            if first.distance < ratio_threshold * second.distance:
+                good_matches.append(first)
+
+        if len(good_matches) < min_good_matches:
+            continue
+
+        similarity = len(good_matches) / float(max(len(keypoints), item["keypoints"], 1))
+        if similarity > best_score:
+            best_score = similarity
+            best_label = item["label"]
+
+    if best_score < similarity_threshold:
+        return NO_SIGN_DETECTED, best_score, "low_similarity"
+
+    return best_label, best_score, "dataset_match"
+
+
 def _predict_frame(frame):
     # Returns (label, confidence, note)
-    if model is None:
-        raise RuntimeError("Model not loaded")
-
     roi = frame
     note = "full_frame"
 
@@ -362,16 +450,13 @@ def _predict_frame(frame):
             if x2 > x1 and y2 > y1:
                 roi = frame[y1:y2, x1:x2]
                 note = "hand_roi"
+        else:
+            return NO_SIGN_DETECTED, 0.0, "no_hand_detected"
 
-    img = cv2.resize(roi, (64, 64))
-    img = img / 255.0
-    img = np.expand_dims(img, axis=0)
-
-    prediction = model.predict(img, verbose=0)[0]
-    idx = int(np.argmax(prediction))
-    conf = float(prediction[idx])
-    label = labels[idx] if 0 <= idx < len(labels) else str(idx)
-    return label, conf, note
+    label, score, match_note = _match_dataset_sign(roi)
+    if note == "hand_roi":
+        match_note = f"{match_note}:hand_roi"
+    return label, score, match_note
 
 
 def _live_factory():
@@ -387,10 +472,14 @@ def _live_factory():
 
 def _update_live_state(state, label: str, conf: float):
     now = time.time()
-    min_conf = float(os.environ.get("LIVE_MIN_CONF", "0.60"))
+    min_conf = float(os.environ.get("LIVE_MATCH_THRESHOLD", "0.18"))
     state["preds"].append((label, conf))
 
-    recent = [(l, c) for (l, c) in state["preds"] if c >= min_conf]
+    recent = [
+        (l, c)
+        for (l, c) in state["preds"]
+        if c >= min_conf and l and l != NO_SIGN_DETECTED
+    ]
     if not recent:
         return {"stable": None, "stable_conf": 0.0, "text": state["text"]}
 
@@ -413,8 +502,6 @@ def _update_live_state(state, label: str, conf: float):
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    if model is None:
-        return jsonify({"error": "model_not_loaded", "hint": "Set ISHARIO_MODEL_PATH or place model.h5 next to the app."}), 503
     if cv2 is None:
         return jsonify({"error": "opencv_missing", "hint": "Install opencv-python."}), 503
 

@@ -60,6 +60,12 @@
         background: #f3f0f9;
       }
 
+      .translation-box.unknown {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+        color: #64748b;
+      }
+
       button {
         transition: all 0.3s ease;
       }
@@ -218,6 +224,7 @@
       let predictTimer;
       const PREDICT_INTERVAL_MS = 250; // ~4 FPS (adjust as needed)
       const JPEG_QUALITY = 0.7;
+      const UNKNOWN_GESTURE = "No Sign Detected";
 
       /**
        * Navigate to a specified route
@@ -320,7 +327,9 @@
           }
 
           const stable = out.stable_gesture || out.gesture || "Detecting...";
-          updateTranslationBox(stable);
+          updateTranslationBox(stable, {
+            unknown: stable === UNKNOWN_GESTURE,
+          });
 
           const textBox = document.getElementById("fullText");
           if (textBox && typeof out.text === "string") {
@@ -335,11 +344,13 @@
        * Update the translation box with gesture text
        * @param {string} text - The text to display
        */
-      function updateTranslationBox(text) {
+      function updateTranslationBox(text, options = {}) {
         const box = document.getElementById("translationBox");
+        const unknown = Boolean(options.unknown);
 
         box.innerText = text;
-        box.classList.add("active");
+        box.classList.remove("active", "unknown");
+        box.classList.add(unknown ? "unknown" : "active");
 
         setTimeout(() => {
           box.classList.remove("active");
