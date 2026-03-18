@@ -50,10 +50,15 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-# Load .env from repo root (preferred) and app folder (fallback). Do not override real env vars.
-load_dotenv(dotenv_path=Path(BASE_DIR).parent / ".env", override=False)
-load_dotenv(dotenv_path=Path(BASE_DIR) / ".env", override=False)
-load_dotenv(override=False)
+try:
+    from dotenv import load_dotenv
+
+    # Load .env from repo root (preferred) and app folder (fallback). Do not override real env vars.
+    load_dotenv(dotenv_path=Path(BASE_DIR).parent / ".env", override=False)
+    load_dotenv(dotenv_path=Path(BASE_DIR) / ".env", override=False)
+    load_dotenv(override=False)
+except Exception:
+    pass
 from ishario.db import (
     DbUnavailable,
     connect_mysql,
@@ -92,7 +97,6 @@ SIGNEASE_DB_CONFIG = env_db_config("SIGNEASE_DB")
 DB_SETUP_HINT = "Set ISHARIO_DB_* and SIGNEASE_DB_* env vars and run: python scripts/init_mysql.py"
 
 # ---------- Sign Images Folder ----------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SIGNS_FOLDER = os.path.join(BASE_DIR, "static", "signs")
 PROFILE_PHOTOS_DIR = os.path.join(BASE_DIR, "static", "profile_photos")
 os.makedirs(SIGNS_FOLDER, exist_ok=True)
@@ -183,6 +187,7 @@ def _strip_keras3_compat_fields(value):
     if isinstance(value, dict):
         cleaned = {}
         for key, child in value.items():
+            # Keras 3 model exports may include fields older/newer runtimes reject.
             if key in {"quantization_config", "optional"} and child is None:
                 continue
             if key == "optional":

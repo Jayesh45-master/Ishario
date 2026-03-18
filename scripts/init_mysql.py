@@ -58,6 +58,30 @@ def _ensure_database(conn, db_name: str) -> None:
         cur.close()
 
 
+def _is_safe_mysql_user(value: str) -> bool:
+    # Very small allowlist: avoid SQL injection when interpolating user identifiers.
+    # Allows typical local dev usernames like root, ishario, app_user, etc.
+    return bool(value) and all(c.isalnum() or c in {"_", "-", "."} for c in value)
+
+
+def _ensure_user_and_grants(conn, *, db_name: str, user: str | None, password: str | None, host: str) -> None:
+    if not user or user.lower() == "root":
+        return
+    if not _is_safe_mysql_user(user) or not _is_safe_mysql_user(host):
+        raise SystemExit(f"Unsafe MySQL user/host value. user={user!r} host={host!r}")
+
+    cur = conn.cursor()
+    try:
+        # MySQL does not allow parameterizing identifiers reliably; validate then interpolate.
+        cur.execute(f"CREATE USER IF NOT EXISTS '{user}'@'{host}' IDENTIFIED BY %s", (password or "",))
+        cur.execute(f"GRANT ALL PRIVILEGES ON `{db_name}`.* TO '{user}'@'{host}'")
+        cur.execute("FLUSH PRIVILEGES")
+        conn.commit()
+        print(f"[OK] Ensured MySQL user + grants: {user}@{host} -> {db_name}")
+    finally:
+        cur.close()
+
+
 def _seed_admin(conn, db_name: str) -> None:
     email = _env("ISHARIO_SEED_ADMIN_EMAIL")
     password = _env("ISHARIO_SEED_ADMIN_PASSWORD")
@@ -82,6 +106,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     repo = _repo_root()
     ishario_db_name = _env("ISHARIO_DB_NAME", "ishario_db") or "ishario_db"
     signease_db_name = _env("SIGNEASE_DB_NAME", "signease") or "signease"
+    app_user_host = _env("MYSQL_APP_USER_HOST", "localhost") or "localhost"
 
     ishario_sql = repo / "db" / "ishario_db.sql"
     signease_sql = repo / "db" / "signease.sql"
@@ -95,6 +120,22 @@ def main(argv: Iterable[str] | None = None) -> int:
         print(f"[..] Ensuring databases: {ishario_db_name}, {signease_db_name}")
         _ensure_database(conn, ishario_db_name)
         _ensure_database(conn, signease_db_name)
+
+        # Optional: create a non-root app user and grant privileges (recommended for local dev).
+        _ensure_user_and_grants(
+            conn,
+            db_name=ishario_db_name,
+            user=_env("ISHARIO_DB_USER"),
+            password=_env("ISHARIO_DB_PASS", ""),
+            host=app_user_host,
+        )
+        _ensure_user_and_grants(
+            conn,
+            db_name=signease_db_name,
+            user=_env("SIGNEASE_DB_USER", _env("ISHARIO_DB_USER")),
+            password=_env("SIGNEASE_DB_PASS", _env("ISHARIO_DB_PASS", "")),
+            host=app_user_host,
+        )
 
         print(f"[..] Applying schema: {ishario_sql.name} -> {ishario_db_name}")
         _execute_sql(conn, f"USE `{ishario_db_name}`;\n{_read_sql(ishario_sql)}\n")

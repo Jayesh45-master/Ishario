@@ -28,12 +28,16 @@ def env_db_config(prefix: str) -> Dict[str, Any]:
     user = os.environ.get(f"{prefix}_USER", "root")
     password = os.environ.get(f"{prefix}_PASS", "")
     database = os.environ.get(f"{prefix}_NAME")
+    if not database:
+        if prefix == "ISHARIO_DB":
+            database = "ishario_db"
+        elif prefix == "SIGNEASE_DB":
+            database = "signease"
     port_raw = os.environ.get(f"{prefix}_PORT")
     port = int(port_raw) if port_raw else 3306
 
     cfg: Dict[str, Any] = {"host": host, "port": port, "user": user, "password": password}
-    if database:
-        cfg["database"] = database
+    cfg["database"] = database
     return cfg
 
 
@@ -43,7 +47,10 @@ def connect_mysql(cfg: Dict[str, Any], *, db_label: str):
     except mysql.connector.Error as e:
         raise DbUnavailable(
             db_name=db_label,
-            hint="Set *_DB_HOST/_USER/_PASS/_NAME env vars and run: python scripts/init_mysql.py",
+            hint=(
+                "Set ISHARIO_DB_HOST/USER/PASS/NAME and SIGNEASE_DB_HOST/USER/PASS/NAME env vars "
+                "and run: python scripts/init_mysql.py"
+            ),
             original=e,
         ) from e
 
