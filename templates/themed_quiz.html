@@ -69,38 +69,35 @@
         // --- Game Data ---
         // Image URLs updated to point to the /static/signs/ folder
         const quizData = [
-            {
-                id: 1,
-                theme: "Medical",
-                signWord: "EMERGENCY",
-                imageUrl: "/static/signs/Emergency.png",
-                question: "What does this sign represent?",
-                correctAnswer: "Immediate need for help (Medical/Police)",
-                options: [
-                    "Asking for directions to the Hospital",
-                    "Immediate need for help (Medical/Police)",
-                    "A specific type of doctor",
-                    "A traffic accident"
-                ]
-            },
-            {
-                id: 2,
-                theme: "Travel",
-                signWord: "AIRPLANE",
-                imageUrl: "/static/signs/Airplane.png",
-                question: "Which word matches this sign?",
-                correctAnswer: "Airplane",
-                options: ["Ticket", "Luggage", "Airplane", "Bus"]
-            },
-            {
-                id: 3,
-                theme: "Education",
-                signWord: "TEACHER",
-                imageUrl: "/static/signs/Teacher.png",
-                question: "Select the meaning of the displayed sign.",
-                correctAnswer: "Teacher",
-                options: ["Student", "School", "Book", "Teacher"]
-            }
+            // Medical Theme
+            { id: 1, theme: "Medical", signWord: "EMERGENCY", imageUrl: "/static/signs/Emergency.png", question: "What does this sign represent?", correctAnswer: "Immediate need for help (Medical/Police)", options: ["Asking for directions to the Hospital", "Immediate need for help (Medical/Police)", "A specific type of doctor", "A traffic accident"] },
+            { id: 2, theme: "Medical", signWord: "HOSPITAL", imageUrl: "/static/signs/Hospital.png", question: "Which place is indicated by this sign?", correctAnswer: "Hospital", options: ["School", "Hospital", "Police Station", "Supermarket"] },
+            { id: 3, theme: "Medical", signWord: "MEDICINE", imageUrl: "/static/signs/Medicine.png", question: "What should you take if you're prescribed this?", correctAnswer: "Medicine", options: ["Water", "Food", "Medicine", "Sleep"] },
+            { id: 4, theme: "Medical", signWord: "PAIN", imageUrl: "/static/signs/Pain.png", question: "What physical sensation does this sign communicate?", correctAnswer: "Pain/Hurting", options: ["Tiredness", "Pain/Hurting", "Happiness", "Hunger"] },
+            { id: 5, theme: "Medical", signWord: "DOCTOR", imageUrl: "/static/signs/Doctor.png", question: "Who is the medical professional shown here?", correctAnswer: "Doctor", options: ["Nurse", "Doctor", "Teacher", "Police"] },
+            
+            // Travel Theme
+            { id: 6, theme: "Travel", signWord: "AIRPLANE", imageUrl: "/static/signs/Airplane.png", question: "Which word matches this sign?", correctAnswer: "Airplane", options: ["Ticket", "Luggage", "Airplane", "Bus"] },
+            { id: 7, theme: "Travel", signWord: "TRAIN", imageUrl: "/static/signs/Train.png", question: "What mode of transport does this sign refer to?", correctAnswer: "Train", options: ["Bus", "Car", "Train", "Bicycle"] },
+            { id: 8, theme: "Travel", signWord: "BUS", imageUrl: "/static/signs/Bus.png", question: "What public transport vehicle is this?", correctAnswer: "Bus", options: ["Taxi", "Train", "Bus", "Airplane"] },
+            { id: 9, theme: "Travel", signWord: "MAP", imageUrl: "/static/signs/Map.png", question: "What do you use to find locations?", correctAnswer: "Map", options: ["Phone", "Book", "Map", "Ticket"] },
+            { id: 10, theme: "Travel", signWord: "TRAVEL", imageUrl: "/static/signs/Travel.png", question: "What action is represented by this sign?", correctAnswer: "Traveling/Trip", options: ["Walking", "Running", "Traveling/Trip", "Sleeping"] },
+            
+            // Education Theme
+            { id: 11, theme: "Education", signWord: "TEACHER", imageUrl: "/static/signs/Teacher.png", question: "Select the meaning of the displayed sign.", correctAnswer: "Teacher", options: ["Student", "School", "Book", "Teacher"] },
+            { id: 12, theme: "Education", signWord: "STUDENT", imageUrl: "/static/signs/Student.png", question: "Who typically learns in a classroom?", correctAnswer: "Student", options: ["Teacher", "Principal", "Student", "Parent"] },
+            { id: 13, theme: "Education", signWord: "SCHOOL", imageUrl: "/static/signs/School.png", question: "What is this educational institution?", correctAnswer: "School", options: ["Hospital", "School", "Library", "Home"] },
+            { id: 14, theme: "Education", signWord: "BOOK", imageUrl: "/static/signs/Book.png", question: "What object is this sign showing?", correctAnswer: "Book", options: ["Paper", "Pen", "Book", "Computer"] },
+            { id: 15, theme: "Education", signWord: "READ", imageUrl: "/static/signs/Read.png", question: "What action are you doing with a book?", correctAnswer: "Reading", options: ["Writing", "Drawing", "Reading", "Sleeping"] },
+            
+            // Family Theme
+            { id: 16, theme: "Family", signWord: "MOTHER", imageUrl: "/static/signs/Mother.png", question: "Which family member does this sign represent?", correctAnswer: "Mother", options: ["Father", "Aunt", "Mother", "Sister"] },
+            { id: 17, theme: "Family", signWord: "FATHER", imageUrl: "/static/signs/Father.png", question: "Which family member does this sign represent?", correctAnswer: "Father", options: ["Uncle", "Brother", "Father", "Grandfather"] },
+            { id: 18, theme: "Family", signWord: "BROTHER", imageUrl: "/static/signs/Brother.png", question: "Which sibling does this represent?", correctAnswer: "Brother", options: ["Sister", "Cousin", "Brother", "Friend"] },
+            
+            // Emotion Theme
+            { id: 19, theme: "Emotion", signWord: "SCARED", imageUrl: "/static/signs/Scared.jpeg", question: "How does this person feel?", correctAnswer: "Scared/Afraid", options: ["Happy", "Angry", "Scared/Afraid", "Excited"] },
+            { id: 20, theme: "Emotion", signWord: "EXCITED", imageUrl: "/static/signs/Excited.jpeg", question: "Which emotion is shown here?", correctAnswer: "Excited", options: ["Bored", "Excited", "Sad", "Tired"] }
         ];
         
         // --- Game State ---
