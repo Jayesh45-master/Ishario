@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
+
     <style>
         /* General Styles */
         body {
@@ -39,27 +40,34 @@
             justify-content: center;
             border: 3px solid transparent;
         }
+
         .sign-option:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
             border-color: #a78bfa;
         }
-        
+
         .sign-option.correct {
-            background-color: #d1fae5; /* Green 100 */
-            border-color: #10b981; /* Green 500 */
+            background-color: #d1fae5;
+            /* Green 100 */
+            border-color: #10b981;
+            /* Green 500 */
         }
+
         .sign-option.incorrect {
-            background-color: #fee2e2; /* Red 100 */
-            border-color: #ef4444; /* Red 500 */
+            background-color: #fee2e2;
+            /* Red 100 */
+            border-color: #ef4444;
+            /* Red 500 */
         }
 
         .sign-image-placeholder {
             width: 100%;
             max-width: 180px;
-            height: 120px; 
+            height: 120px;
             object-fit: contain;
-            background-color: #e5e7eb; /* Light gray for placeholder */
+            background-color: #e5e7eb;
+            /* Light gray for placeholder */
             border-radius: 8px;
             margin-bottom: 0.5rem;
             display: flex;
@@ -79,15 +87,31 @@
             animation: fadeInOut 3s forwards;
             pointer-events: none;
         }
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: scale(0.9); }
-            10% { opacity: 1; transform: scale(1); }
-            90% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.9); }
-        }
 
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            10% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            90% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
     </style>
 </head>
+
 <body class="flex flex-col">
 
     <script>
@@ -95,17 +119,59 @@
         // This dictionary holds all available signs for the game.
         // REPLACE THE imageUrls with YOUR ACTUAL SIGN IMAGE URLs or GIF paths.
         const signData = [
-            // Level 1: Basics
+            // Level 1: Basics (Alphabet & Numbers)
             { word: "A", imageUrl: "/static/signs/A.png", isCorrect: false, category: "Alphabet" },
             { word: "B", imageUrl: "/static/signs/B.png", isCorrect: false, category: "Alphabet" },
-            { word: "3", imageUrl: "/static/signs/3.png", isCorrect: false, category: "Number" },
-            { word: "Sunday", imageUrl: "/static/signs/Sunday.png", isCorrect: false, category: "Day" },
+            { word: "C", imageUrl: "/static/signs/C.png", isCorrect: false, category: "Alphabet" },
+            { word: "D", imageUrl: "/static/signs/D.png", isCorrect: false, category: "Alphabet" },
+            { word: "E", imageUrl: "/static/signs/E.png", isCorrect: false, category: "Alphabet" },
+            { word: "X", imageUrl: "/static/signs/X.png", isCorrect: false, category: "Alphabet" },
+            { word: "Y", imageUrl: "/static/signs/Y.png", isCorrect: false, category: "Alphabet" },
+            { word: "Z", imageUrl: "/static/signs/Z.png", isCorrect: false, category: "Alphabet" },
+            { word: "0", imageUrl: "/static/signs/0.png", isCorrect: false, category: "Number" },
+            { word: "1", imageUrl: "/static/signs/1.png", isCorrect: false, category: "Number" },
+            { word: "2", imageUrl: "/static/signs/2.png", isCorrect: false, category: "Number" },
+            { word: "6", imageUrl: "/static/signs/6.png", isCorrect: false, category: "Number" },
+            { word: "4", imageUrl: "/static/signs/4.png", isCorrect: false, category: "Number" },
+            { word: "9", imageUrl: "/static/signs/9.png", isCorrect: false, category: "Number" },
 
-            // Level 2: Daily Life
+            // Level 2: Days & Months
+            { word: "Monday", imageUrl: "/static/signs/Monday.png", isCorrect: false, category: "Day" },
+            { word: "Friday", imageUrl: "/static/signs/Friday.png", isCorrect: false, category: "Day" },
+            { word: "Sunday", imageUrl: "/static/signs/Sunday.png", isCorrect: false, category: "Day" },
+            { word: "January", imageUrl: "/static/signs/January.png", isCorrect: false, category: "Month" },
+            { word: "March", imageUrl: "/static/signs/March.png", isCorrect: false, category: "Month" },
+
+            // Level 3: Common Words & Daily Life
             { word: "Hello", imageUrl: "/static/signs/Hello.png", isCorrect: false, category: "Greeting" },
+            { word: "Please", imageUrl: "/static/signs/Please.png", isCorrect: false, category: "Phrase" },
+            { word: "Sorry", imageUrl: "/static/signs/Sorry.png", isCorrect: false, category: "Phrase" },
+            { word: "Yes", imageUrl: "/static/signs/Yes.png", isCorrect: false, category: "Phrase" },
+            { word: "No", imageUrl: "/static/signs/No.png", isCorrect: false, category: "Phrase" },
             { word: "Water", imageUrl: "/static/signs/Water.jpg", isCorrect: false, category: "Daily Word" },
             { word: "Thank You", imageUrl: "/static/signs/Thankyou.png", isCorrect: false, category: "Phrase" },
-            { word: "Bathroom", imageUrl: "/static/signs/Bathroom.png", isCorrect: false, category: "Daily Word" }
+            { word: "Bathroom", imageUrl: "/static/signs/Bathroom.png", isCorrect: false, category: "Daily Word" },
+            { word: "Eat", imageUrl: "/static/signs/Eat.png", isCorrect: false, category: "Daily Word" },
+            { word: "Drink", imageUrl: "/static/signs/Drink.png", isCorrect: false, category: "Daily Word" },
+            { word: "Sleep", imageUrl: "/static/signs/Sleep.png", isCorrect: false, category: "Daily Word" },
+            { word: "Help", imageUrl: "/static/signs/Help.png", isCorrect: false, category: "Daily Word" },
+
+            // Level 4: Family & People
+            { word: "Mother", imageUrl: "/static/signs/Mother.png", isCorrect: false, category: "People" },
+            { word: "Father", imageUrl: "/static/signs/Father.png", isCorrect: false, category: "People" },
+            { word: "Brother", imageUrl: "/static/signs/Brother.png", isCorrect: false, category: "People" },
+            { word: "Teacher", imageUrl: "/static/signs/Teacher.png", isCorrect: false, category: "People" },
+            { word: "Student", imageUrl: "/static/signs/Student.png", isCorrect: false, category: "People" },
+            { word: "Police", imageUrl: "/static/signs/Police.png", isCorrect: false, category: "Profession" },
+
+            // Level 5: Education & Transportation
+            { word: "School", imageUrl: "/static/signs/School.png", isCorrect: false, category: "Education" },
+            { word: "Book", imageUrl: "/static/signs/Book.png", isCorrect: false, category: "Education" },
+            { word: "Pen", imageUrl: "/static/signs/Pen.png", isCorrect: false, category: "Education" },
+            { word: "Read", imageUrl: "/static/signs/Read.png", isCorrect: false, category: "Education" },
+            { word: "Train", imageUrl: "/static/signs/Train.png", isCorrect: false, category: "Transportation" },
+            { word: "Bus", imageUrl: "/static/signs/Bus.png", isCorrect: false, category: "Transportation" },
+            { word: "Airplane", imageUrl: "/static/signs/Airplane.png", isCorrect: false, category: "Transportation" }
         ];
 
         // --- Game State ---
@@ -116,7 +182,7 @@
 
         // --- Helper Functions ---
         function navigateTo(page) {
-            window.location.href = `/${page}`; 
+            window.location.href = `/${page}`;
         }
 
         function shuffleArray(array) {
@@ -125,13 +191,13 @@
                 [array[i], array[j]] = [array[j], array[i]];
             }
         }
-        
+
         // UI Helper: Show a custom message
         function showMessage(text, type = 'info') {
             const messageBox = document.getElementById('messageBox');
             messageBox.textContent = text;
             messageBox.className = `fixed top-20 left-1/2 transform -translate-x-1/2 p-4 rounded-lg text-white shadow-xl z-50`;
-            
+
             if (type === 'success') {
                 messageBox.classList.add('bg-green-500');
             } else if (type === 'error') {
@@ -139,7 +205,7 @@
             } else {
                 messageBox.classList.add('bg-gray-700');
             }
-            
+
             messageBox.style.opacity = 1;
             setTimeout(() => {
                 messageBox.style.opacity = 0;
@@ -152,7 +218,7 @@
             // 1. Select the correct word
             const allWords = signData.map(item => item.word);
             const correctWord = allWords[Math.floor(Math.random() * allWords.length)];
-            
+
             // 2. Find the correct sign image URL
             const correctSign = signData.find(item => item.word === correctWord);
 
@@ -175,7 +241,7 @@
                 options: options,
                 correctId: options.find(o => o.isCorrect).id
             };
-            
+
             renderGame();
         }
 
@@ -184,7 +250,7 @@
 
             const selectedOption = currentQuestion.options.find(o => o.id === selectedId);
             const optionElement = document.getElementById(`option-${selectedId}`);
-            
+
             // Prevent double-clicking
             document.querySelectorAll('.sign-option').forEach(el => el.onclick = null);
 
@@ -199,7 +265,7 @@
                 document.getElementById(`option-${correctOptionId}`).classList.add('correct');
                 showMessage(`Incorrect! You lost a life.`, 'error');
             }
-            
+
             updateScoreboard();
 
             setTimeout(() => {
@@ -236,9 +302,9 @@
         // --- Rendering ---
         function renderGame() {
             if (currentQuestion === null) return;
-            
+
             document.getElementById('questionWord').textContent = currentQuestion.word;
-            document.getElementById('levelTracker').textContent = `Round ${currentLevel}`;
+            document.getElementById('levelTracker').textContent = `Quiz ${currentLevel}`;
 
             const optionsHtml = currentQuestion.options.map(option => `
                 <div id="option-${option.id}" class="sign-option" onclick="checkAnswer(${option.id})">
@@ -252,30 +318,32 @@
             document.getElementById('optionsGrid').innerHTML = optionsHtml;
             // Re-attach onclick events to the dynamically created elements after rendering
             document.getElementById('optionsGrid').querySelectorAll('.sign-option').forEach(el => {
-                 const id = parseInt(el.id.split('-')[1]);
-                 el.onclick = () => checkAnswer(id);
+                const id = parseInt(el.id.split('-')[1]);
+                el.onclick = () => checkAnswer(id);
             });
         }
-        
+
         // Initial setup on load
         document.addEventListener('DOMContentLoaded', () => {
-             // Check if we are coming from the arcade with a specific game ID
-             const urlParams = new URLSearchParams(window.location.search);
-             const gameId = urlParams.get('id');
+            // Check if we are coming from the arcade with a specific game ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const gameId = urlParams.get('id');
 
-             if (gameId === 'sign_match') {
+            if (gameId === 'sign_match') {
                 document.getElementById('startTitle').textContent = "Sign Match Challenge";
                 document.getElementById('startDescription').textContent = "Match the written word to the correct sign image. Test your Level 1 & 2 vocabulary!";
-             }
-             // Reset UI to start screen
-             document.getElementById('gameArea').classList.add('hidden');
-             document.getElementById('endScreen').classList.add('hidden');
+            }
+            // Reset UI to start screen
+            document.getElementById('gameArea').classList.add('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
         });
     </script>
 
 
     <!-- Global Message Box (for alerts/messages) -->
-    <div id="messageBox" class="fixed top-20 left-1/2 transform -translate-x-1/2 p-4 rounded-lg text-white shadow-xl z-50 opacity-0 transition-opacity duration-300"></div>
+    <div id="messageBox"
+        class="fixed top-20 left-1/2 transform -translate-x-1/2 p-4 rounded-lg text-white shadow-xl z-50 opacity-0 transition-opacity duration-300">
+    </div>
 
     <!-- --- Top Navigation Bar (Ishario) --- -->
     <nav class="bg-white shadow-md sticky top-0 z-40">
@@ -283,11 +351,12 @@
             <div class="flex justify-between h-16 items-center">
                 <div class="flex-shrink-0 flex items-center">
                     <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
-                        <i class="fas fa-book-open mr-2"></i> Ishario 
+                        <i class="fas fa-book-open mr-2"></i> Ishario
                     </button>
                 </div>
                 <div class="flex items-center space-x-4 text-xl text-gray-400">
-                    <button onclick="navigateTo('games')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                    <button onclick="navigateTo('games')"
+                        class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
                         <i class="fas fa-arrow-left mr-1"></i> Arcade
                     </button>
                 </div>
@@ -298,16 +367,19 @@
 
     <!-- --- Main Content Area --- -->
     <div class="max-w-4xl mx-auto px-4 py-12">
-        
+
         <!-- --- 1. START SCREEN --- -->
         <div id="startScreen" class="bg-white p-8 rounded-xl shadow-2xl text-center">
-            <div class="w-20 h-20 bg-purple-100 text-purple-600 rounded-full inline-flex items-center justify-center text-4xl mb-4">
+            <div
+                class="w-20 h-20 bg-purple-100 text-purple-600 rounded-full inline-flex items-center justify-center text-4xl mb-4">
                 <i class="fas fa-dice"></i>
             </div>
             <h1 id="startTitle" class="text-3xl font-extrabold text-gray-800 mb-2">Sign Match Challenge</h1>
-            <p id="startDescription" class="text-gray-500 mb-6">Match the written word to the correct sign image. Perfect for vocabulary testing.</p>
+            <p id="startDescription" class="text-gray-500 mb-6">Match the written word to the correct sign image.
+                Perfect for vocabulary testing.</p>
 
-            <button onclick="startGame()" class="px-8 py-3 rounded-xl text-white font-semibold cta-button hover:opacity-90 transition duration-150">
+            <button onclick="startGame()"
+                class="px-8 py-3 rounded-xl text-white font-semibold cta-button hover:opacity-90 transition duration-150">
                 Start Game <i class="fas fa-play ml-2"></i>
             </button>
         </div>
@@ -315,7 +387,8 @@
         <!-- --- 2. GAME AREA --- -->
         <div id="gameArea" class="hidden">
             <!-- Scoreboard -->
-            <div class="flex justify-between items-center mb-6 p-4 bg-white rounded-xl shadow-lg border border-gray-100">
+            <div
+                class="flex justify-between items-center mb-6 p-4 bg-white rounded-xl shadow-lg border border-gray-100">
                 <div class="text-lg font-semibold text-gray-700" id="levelTracker">Round 1</div>
                 <div class="text-lg font-semibold text-gray-700">
                     Score: <span id="currentScore" class="main-gradient-text font-extrabold">0</span>
@@ -343,14 +416,17 @@
             <p class="text-xl text-gray-600 mb-6">Your Final Score:</p>
             <p id="finalScore" class="text-6xl font-extrabold main-gradient-text mb-8">0</p>
 
-            <button onclick="startGame()" class="px-8 py-3 rounded-xl text-white font-semibold cta-button hover:opacity-90 transition duration-150 mr-4">
+            <button onclick="startGame()"
+                class="px-8 py-3 rounded-xl text-white font-semibold cta-button hover:opacity-90 transition duration-150 mr-4">
                 Play Again <i class="fas fa-sync-alt ml-2"></i>
             </button>
-            <button onclick="navigateTo('games')" class="px-8 py-3 rounded-xl text-gray-600 font-semibold bg-gray-100 hover:bg-gray-200 transition duration-150">
+            <button onclick="navigateTo('games')"
+                class="px-8 py-3 rounded-xl text-gray-600 font-semibold bg-gray-100 hover:bg-gray-200 transition duration-150">
                 Back to Arcade
             </button>
         </div>
 
     </div>
 </body>
+
 </html>
