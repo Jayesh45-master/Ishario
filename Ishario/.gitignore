@@ -1,0 +1,30 @@
+.conda/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.env.*
+
+# ML artifacts
+model.h5
+model.h5.bak
+*.keras
+
+# Allow committing the current checked-in model artifacts (explicit request)
+!model.h5
+!model.h5.bak
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Local tool dirs / shell leftovers (do not commit)
+.anaconda/
+.antigravity/
+.bun/
+.bash_history
+.bash_profile
+*-windows.xml
