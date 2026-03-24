@@ -1,0 +1,27 @@
+# Ignore archive folder
+
+archive/
+
+
+
+# Ignore environment variables
+
+.env
+
+# Python cache
+
+**pycache**/
+*.pyc
+
+# Flask session files
+
+flask_session/
+
+# VS Code settings
+
+.vscode/
+
+# OS files
+
+.DS_Store
+Thumbs.db

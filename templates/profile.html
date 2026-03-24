@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ishario - Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #f5f0ff, #ffffff, #ede4ff);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, #7e3ff2, #cc66ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .profile-photo {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #8a2be2;
+    }
+    .profile-placeholder {
+      background-color: #e5e5ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8a2be2;
+      font-size: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-white shadow-2xl rounded-3xl max-w-3xl w-full px-10 py-10 border border-gray-100">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-extrabold gradient-text">
+        <i class="fas fa-user-circle mr-2"></i> My Profile
+      </h1>
+      <p class="text-gray-500 mt-2 text-sm">
+        Manage your personal details and keep your Ishario account up to date.
+      </p>
+    </div>
+
+    <div class="flex flex-col items-center mb-8">
+      <div id="photoContainer" class="profile-placeholder profile-photo mb-4">
+        <i class="fas fa-user"></i>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" class="hidden" />
+      <button
+        onclick="document.getElementById('photoInput').click()"
+        class="px-4 py-2 text-sm bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-600 transition">
+        <i class="fas fa-upload mr-2"></i> Upload Photo
+      </button>
+    </div>
+
+    <form id="profileForm" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">First Name</label>
+        <input type="text" id="first_name" class="w-full border border-gray-300 rounded-lg p-2" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Last Name</label>
+        <input type="text" id="last_name" class="w-full border border-gray-300 rounded-lg p-2" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Email (Read-only)</label>
+        <input type="email" id="email" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg p-2" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Alternate Email</label>
+        <input type="email" id="alt_email" class="w-full border border-gray-300 rounded-lg p-2" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Contact</label>
+        <input type="tel" id="contact" class="w-full border border-gray-300 rounded-lg p-2" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Username</label>
+        <input type="text" id="username" class="w-full border border-gray-300 rounded-lg p-2" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Date of Birth</label>
+        <input type="date" id="dob" class="w-full border border-gray-300 rounded-lg p-2" />
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-gray-700 font-semibold mb-1">About You</label>
+        <textarea id="about" rows="3" class="w-full border border-gray-300 rounded-lg p-2"></textarea>
+      </div>
+    </form>
+
+    <div class="mt-10 flex flex-col sm:flex-row justify-between gap-4">
+      <button onclick="saveProfile()" class="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-500 text-white px-6 py-2 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-600 transition">
+        <i class="fas fa-save mr-2"></i> Save Profile
+      </button>
+      <button onclick="logoutProfile()" class="w-full sm:w-auto bg-gray-200 text-gray-700 px-6 py-2 rounded-xl font-semibold hover:bg-gray-300 transition">
+        <i class="fas fa-sign-out-alt mr-2"></i> Logout
+      </button>
+    </div>
+  </div>
+
+  <script>
+  // Load profile data from backend
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const res = await fetch("/api/get_profile");
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById("first_name").value = data.first_name || "";
+        document.getElementById("last_name").value = data.last_name || "";
+        document.getElementById("email").value = data.email || "";
+        document.getElementById("alt_email").value = data.alt_email || "";
+        document.getElementById("contact").value = data.contact || "";
+        document.getElementById("username").value = data.username || "";
+        document.getElementById("dob").value = data.dob || "";
+        document.getElementById("about").value = data.about || "";
+
+        if (data.photo) {
+          document.getElementById("photoContainer").innerHTML = `<img src="${data.photo}" class="profile-photo" />`;
+        }
+      } 
+      // No alert or redirect if fetch fails
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  });
+
+  // Upload photo preview
+  document.getElementById("photoInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById("photoContainer").innerHTML = `<img src="${ev.target.result}" class="profile-photo" />`;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Save updated profile
+  async function saveProfile() {
+    const photo = document.querySelector("#photoContainer img")?.src || null;
+    const profile = {
+      first_name: document.getElementById("first_name").value,
+      last_name: document.getElementById("last_name").value,
+      alt_email: document.getElementById("alt_email").value,
+      contact: document.getElementById("contact").value,
+      username: document.getElementById("username").value,
+      dob: document.getElementById("dob").value,
+      about: document.getElementById("about").value,
+      photo: photo
+    };
+
+   const res = await fetch("/api/profile", {
+  method: "POST",
+  body: formData
+  });
+    if (res.ok) alert("✅ Profile updated successfully!");
+    else alert("❌ Error updating profile.");
+  }
+
+  // Logout
+  async function logoutProfile() {
+    await fetch("/logout");
+    window.location.href = "/";
+  }
+</script>
+</body>
+</html>

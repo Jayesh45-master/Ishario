@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Feedback</title>
+    <!-- Tailwind CSS CDN for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f8fc;
+            min-height: 100vh;
+        }
+
+        /* Gradient Text Style for Ishario Logo */
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Submit Button Gradient */
+        .btn-submit {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            box-shadow: 0 4px 6px rgba(138, 43, 226, 0.3);
+            transition: opacity 0.2s;
+        }
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <!-- JavaScript Navigation and Submission Logic -->
+    <script>
+        // Simple mock navigation
+        function navigateTo(page) {
+          window.location.href = `/${page}`; 
+        }
+
+
+        // UI Helper: Show a simple alert message
+        window.alertMessage = (message, isSuccess = true) => {
+            const alertBox = document.createElement('div');
+            alertBox.textContent = message;
+            alertBox.className = `fixed bottom-4 right-4 p-4 rounded-lg text-white shadow-xl z-50 transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
+            document.body.appendChild(alertBox);
+
+            setTimeout(() => {
+                alertBox.remove();
+            }, 4000);
+        };
+        
+        // --- Core Submission Logic (Ready for Python Backend Integration) ---
+        async function submitFeedback(event) {
+            event.preventDefault();
+            
+            const type = document.getElementById('feedbackType').value;
+            const message = document.getElementById('feedbackMessage').value.trim();
+            const email = document.getElementById('contactEmail').value.trim();
+            
+            if (!message) {
+                window.alertMessage("Please enter your feedback or suggestion.", false);
+                return;
+            }
+            
+            // Collect Data
+            const feedbackData = {
+                type: type,
+                message: message,
+                email: email,
+                timestamp: new Date().toISOString()
+            };
+            
+            // --- MOCK API CALL START ---
+            // In a real application, you would use fetch() here:
+            /*
+            try {
+                const response = await fetch('/api/submit_feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(feedbackData)
+                });
+                
+                if (response.ok) {
+                    window.alertMessage("Thank you! Your feedback has been submitted.", true);
+                } else {
+                    window.alertMessage("Error submitting feedback. Please try again.", false);
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                window.alertMessage("Network error. Please check your connection.", false);
+            }
+            */
+            // --- MOCK API CALL END ---
+            
+            // MOCK SUCCESS (Frontend Only):
+            console.log("Mock Submission Data:", feedbackData);
+            window.alertMessage("Thank you! Your feedback has been submitted (Mock Success).", true);
+            
+            // Reset form fields
+            document.getElementById('feedbackMessage').value = '';
+            document.getElementById('contactEmail').value = '';
+        }
+    </script>
+
+
+    <!-- --- Top Navigation Bar (Ishario) --- -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <!-- Logo/Title: Ishario -->
+                <div class="flex-shrink-0 flex items-center">
+                    <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+                        <i class="fas fa-book-open mr-2"></i>
+                        Ishario 
+                    </button>
+                </div>
+                
+                <!-- Right Side: Navigation/User Icons -->
+                <div class="flex items-center space-x-4 text-xl text-gray-400">
+                    <button onclick="navigateTo('dashboard')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+                        <i class="fas fa-arrow-left mr-1"></i> Dashboard
+                    </button>
+                   <div class="flex items-center space-x-4 text-xl text-gray-400">
+          <i class="fas fa-user-circle cursor-pointer hover:text-purple-600" onclick="navigateTo('profile')"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- --- Main Content Area --- -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Header -->
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-2">
+            Share Your Feedback 💬
+        </h1>
+        <p class="text-gray-500 mb-8">Help us improve Ishario! Report bugs, suggest new signs, or request new features you'd like to see added.</p>
+
+        <!-- Feedback Card -->
+        <div class="bg-white p-8 rounded-xl shadow-2xl border border-gray-100">
+            
+            <form onsubmit="submitFeedback(event)">
+                
+                <div class="mb-6">
+                    <label for="feedbackType" class="block text-sm font-semibold text-gray-700 mb-2">Feedback Type</label>
+                    <select id="feedbackType" name="feedbackType" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition duration-150">
+                        <option value="Suggestion">Feature Suggestion / New Content</option>
+                        <option value="Bug">Bug Report / Issue</option>
+                        <option value="General">General Comment</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label for="feedbackMessage" class="block text-sm font-semibold text-gray-700 mb-2">Your Message / Request</label>
+                    <textarea id="feedbackMessage" name="feedbackMessage" rows="6" placeholder="I would love to see a 'Medical Signs' themed quiz..." class="w-full p-4 border border-gray-300 rounded-lg resize-none focus:ring-purple-500 focus:border-purple-500 transition duration-150" required></textarea>
+                </div>
+                
+                <div class="mb-8">
+                    <label for="contactEmail" class="block text-sm font-semibold text-gray-700 mb-2">Your Email (Optional, for follow-up)</label>
+                    <input type="email" id="contactEmail" name="contactEmail" placeholder="name@example.com" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition duration-150">
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-lg text-white font-extrabold btn-submit">
+                    Submit Feedback <i class="fas fa-paper-plane ml-2"></i>
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+</body>
+</html>

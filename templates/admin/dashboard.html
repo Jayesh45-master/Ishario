@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ishario • Admin Dashboard (Refresh & Configure)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ishario: { primary: "#7C3AED", primaryLight: "#A78BFA", bg: "#F5F6FA" }
+          },
+          boxShadow: { soft: "0 8px 24px rgba(16,24,40,.06)" }
+        }
+      }
+    }
+  </script>
+  <style>
+    .caret{transition:transform .2s ease}
+    .open .caret{transform:rotate(90deg)}
+  </style>
+</head>
+<body class="bg-ishario-bg min-h-screen">
+  <!-- Top Bar -->
+  <header class="w-full bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
+      <div class="text-ishario-primary font-extrabold text-xl tracking-tight flex items-center gap-2">
+        <span class="inline-block w-6 h-6 rounded-md bg-ishario-primary"></span>
+        Ishario
+      </div>
+      <nav class="ml-auto flex items-center gap-4">
+        <a href="#" class="text-sm text-gray-600 hover:text-gray-900">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 mt-8 mb-16">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-semibold">Dashboard Overview</h1>
+        <p class="text-gray-500">Displays total users, feedback count, active learners, and latest updates.</p>
+      </div>
+      <div class="flex gap-2">
+        <button id="refreshStatsBtn"
+          class="px-3 py-2 text-sm rounded-lg bg-ishario-primary text-white hover:bg-purple-700">Refresh Stats</button>
+        <button id="configureCardsBtn"
+          class="px-3 py-2 text-sm rounded-lg border border-gray-200 hover:bg-gray-50">Configure Cards</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD CARDS -->
+    <section id="cardsGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+      <!-- Total Users -->
+      <div data-card="totalUsers" class="card bg-white rounded-2xl p-5 shadow-soft">
+        <p class="text-sm text-gray-500">Total Users</p>
+        <p class="text-3xl font-semibold mt-2" id="totalUsersCard">1,284</p>
+        <p class="text-xs text-gray-400 mt-1">All registered users on Ishario</p>
+      </div>
+
+      <!-- Active Learners -->
+      <div data-card="activeLearners" class="card bg-white rounded-2xl p-5 shadow-soft">
+        <p class="text-sm text-gray-500">Active Learners</p>
+        <p class="text-3xl font-semibold mt-2" id="activeLearnersCard">476</p>
+        <p class="text-xs text-gray-400 mt-1">Learners active in the last 7 days</p>
+      </div>
+
+      <!-- Feedback Count -->
+      <div data-card="feedbackCount" class="card bg-white rounded-2xl p-5 shadow-soft">
+        <p class="text-sm text-gray-500">Feedback</p>
+        <p class="text-3xl font-semibold mt-2" id="feedbackCountCard">92</p>
+        <p class="text-xs text-gray-400 mt-1">Open feedback items</p>
+      </div>
+
+      <!-- New This Week -->
+      <div data-card="newWeekly" class="card bg-white rounded-2xl p-5 shadow-soft">
+        <p class="text-sm text-gray-500">New This Week</p>
+        <p class="text-3xl font-semibold mt-2"><span id="newWeeklyCard">+18</span></p>
+        <p class="text-xs text-gray-400 mt-1">Users who joined this week</p>
+      </div>
+    </section>
+
+    <!-- RECENT ACTIVITY -->
+    <section class="mt-10 bg-white rounded-2xl p-5 shadow-soft">
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 text-ishario-primary" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm.75 4.5a.75.75 0 00-1.5 0v4.19l3.22 1.93a.75.75 0 10.76-1.3l-2.48-1.49V6.5z"/></svg>
+        <h2 class="font-semibold">Recent Activity</h2>
+      </div>
+      <ul id="activityList" class="mt-3 text-sm text-gray-600 space-y-2">
+        <li>System initialized.</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- CONFIGURE CARDS MODAL -->
+  <div id="configModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-soft w-full max-w-md p-6">
+      <div class="flex items-start justify-between">
+        <h2 class="text-xl font-semibold">Configure Cards</h2>
+        <button id="closeModal" aria-label="Close" class="text-gray-400 hover:text-gray-600">✕</button>
+      </div>
+
+      <p class="text-sm text-gray-500 mt-1">Show/hide cards and choose a default data range.</p>
+
+      <div class="mt-5 space-y-3">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="toggleTotalUsers" class="rounded" checked />
+          <span>Total Users</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="toggleActiveLearners" class="rounded" checked />
+          <span>Active Learners</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="toggleFeedbackCount" class="rounded" checked />
+          <span>Feedback Count</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="toggleNewWeekly" class="rounded" checked />
+          <span>New This Week</span>
+        </label>
+      </div>
+
+      <div class="mt-5">
+        <label class="block text-sm font-medium mb-1">Default Data Range</label>
+        <select id="rangeSelect" class="w-full rounded-lg border border-gray-200 px-3 py-2">
+          <option value="week" selected>This Week</option>
+          <option value="day">Today</option>
+          <option value="month">This Month</option>
+          <option value="all">All Time</option>
+        </select>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button id="resetLayout" class="px-3 py-2 rounded-lg border hover:bg-gray-50">Reset</button>
+        <button id="saveConfig" class="px-3 py-2 rounded-lg bg-ishario-primary text-white hover:bg-purple-700">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script>
+  // ---------- HELPERS ----------
+  const toast = (msg, color="bg-purple-600") => {
+    const t = document.createElement("div");
+    t.textContent = msg;
+    t.className = `fixed bottom-6 right-6 ${color} text-white px-4 py-2 rounded-xl shadow-lg`;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 2200);
+  };
+
+  const activity = (text) => {
+    const li = document.createElement("li");
+    li.textContent = text;
+    document.getElementById("activityList").prepend(li);
+  };
+
+  // ---------- REFRESH STATS ----------
+  document.getElementById("refreshStatsBtn").addEventListener("click", async () => {
+    try {
+      // Fetch data from backend API
+      const [u, a, f] = await Promise.all([
+        fetchJson('/api/total_users'),
+        fetchJson('/api/active_learners'),
+        fetchJson('/api/total_feedback')
+      ]);
+
+      // Update the DOM elements with the fetched data
+      document.getElementById("totalUsersCard").textContent = u.total_users;
+      document.getElementById("activeLearnersCard").textContent = a.active_learners;
+      document.getElementById("feedbackCountCard").textContent = f.total_feedback;
+      document.getElementById("newWeeklyCard").textContent = `+18`;  // Placeholder value for now
+
+      toast("Dashboard stats refreshed ✅", "bg-green-600");
+      activity(`Refreshed stats at ${new Date().toLocaleString()}`);
+    } catch (err) {
+      console.error("Error refreshing stats", err);
+      toast("Failed to refresh stats", "bg-red-600");
+    }
+  });
+
+  // Fetch function
+  async function fetchJson(path) {
+    const response = await fetch(path);
+    return response.json();
+  }
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario Dashboard</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* ===== GENERAL STYLES ===== */
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f5fb;
+            margin: 0;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 40px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            color: #8a2be2;
+            font-size: 22px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            color: #555;
+        }
+
+        .nav-links span {
+            cursor: pointer;
+            font-size: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links span:hover {
+            color: #8a2be2;
+        }
+
+        .nav-links i {
+            margin-right: 6px;
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 30px;
+        }
+
+        /* ===== WELCOME SECTION ===== */
+        .welcome h1 {
+            font-size: 34px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .welcome p {
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .welcome span {
+            color: #8a2be2;
+            font-weight: 600;
+        }
+
+        /* ===== SECTION TITLES ===== */
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-top: 35px;
+            margin-bottom: 18px;
+            color: #333;
+        }
+
+        /* ===== RESOURCE CARDS ===== */
+        .cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .card p {
+            color: #666;
+            margin: 10px 0;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-purple {
+            margin-top: 12px;
+            background: linear-gradient(90deg, #8a2be2, #cc66ff);
+            border: none;
+            color: white;
+            padding: 11px;
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-purple:hover {
+            opacity: 0.9;
+        }
+
+        .btn-red {
+            margin-top: 12px;
+            background: #ef3d3d;
+            border: none;
+            color: white;
+            padding: 11px;
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-red:hover {
+            opacity: 0.9;
+        }
+
+        /* ===== LEARNING PATH ===== */
+        .learning-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 22px;
+        }
+
+        .level-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .level-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .level-card strong {
+            color: #333;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .level-card p {
+            color: #666;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+
+        .progress {
+            height: 8px;
+            background: #ddd;
+            border-radius: 6px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 8px;
+            background: linear-gradient(90deg, #8a2be2, #cc66ff);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        /* ===== CHATBOT BUTTON ===== */
+        #chatButton {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #8a2be2, #cc66ff);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+            z-index: 999;
+            border: none;
+            transition: transform 0.3s ease;
+        }
+
+        #chatButton:hover {
+            transform: scale(1.1);
+        }
+
+        /* ===== CHAT WINDOW ===== */
+        #chatContainer {
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 340px;
+            height: 450px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 999;
+        }
+
+        /* ===== CHAT HEADER ===== */
+        .chat-header {
+            background: linear-gradient(135deg, #8a2be2, #cc66ff);
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ai-tag {
+            background: white;
+            color: #8a2be2;
+            font-size: 11px;
+            padding: 3px 6px;
+            border-radius: 6px;
+            margin-left: 6px;
+        }
+
+        .close-btn {
+            margin-left: auto;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .close-btn:hover {
+            opacity: 0.7;
+        }
+
+        /* ===== CHAT MESSAGES ===== */
+        .chat-messages {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            background: #f8f8fc;
+        }
+
+        .user-message {
+            background: #8a2be2;
+            color: white;
+            padding: 9px 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            max-width: 75%;
+            margin-left: auto;
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+
+        .bot-message {
+            background: #ececff;
+            padding: 9px 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            max-width: 75%;
+            font-size: 14px;
+            color: #333;
+            word-wrap: break-word;
+        }
+
+        .typing {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 6px;
+            font-style: italic;
+        }
+
+        /* ===== CHAT INPUT ===== */
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+            background: white;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input button {
+            background: #8a2be2;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .chat-input button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+
+<body>
+    <!-- ===== NAVBAR ===== -->
+    <div class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-book-open"></i> Ishario
+        </div>
+
+        <div class="nav-links">
+            <span onclick="navigateTo('/favorites')">
+                <i class="fa-regular fa-star"></i>Favorites
+            </span>
+            <span onclick="navigateTo('/progress')">
+                <i class="fa-solid fa-chart-line"></i>Progress
+            </span>
+            <span onclick="navigateTo('/games')">
+                <i class="fa-solid fa-gamepad"></i>Games
+            </span>
+            <span onclick="navigateTo('/feedback')">
+                <i class="fa-regular fa-comment"></i>Feedback
+            </span>
+            <span onclick="navigateTo('/live')">
+                <i class="fa-solid fa-video"></i>Live Interaction
+            </span>
+            <i class="fa-solid fa-user cursor-pointer" onclick="navigateTo('/profile')" title="Profile"></i>
+            <i class="fa-solid fa-right-from-bracket cursor-pointer" onclick="navigateTo('/')" title="Logout"></i>
+        </div>
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="container">
+        <div class="welcome">
+            <h1>Welcome, <span id="userName">User</span>! 👋</h1>
+            <p>Ready to continue your sign language journey?</p>
+        </div>
+
+        <div class="section-title">Tools & Resources</div>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Sign/Text Converter</h3>
+                <p>Translate signs to text or vice versa.</p>
+                <button class="btn-purple" onclick="navigateTo('/conversion')">Start Translating</button>
+            </div>
+
+            <div class="card">
+                <h3>Video Lectures</h3>
+                <p>Watch curated tutorials for deeper understanding.</p>
+                <button class="btn-red" onclick="navigateTo('/videos')">View Videos</button>
+            </div>
+        </div>
+
+        <div class="section-title">Your Learning Path</div>
+
+        <div class="learning-grid">
+            <div class="level-card" onclick="navigateTo('/basics')" style="cursor:pointer;">
+                <strong>Level 1: Basics</strong>
+                <p>Alphabets, Numbers, Days & Months</p>
+                <div class="progress">
+                    <div class="progress-fill" id="progress1" style="width: 65%"></div>
+                </div>
+                <p>65% Complete</p>
+            </div>
+
+
+            <div class="level-card" onclick="navigateTo('/daily_life')" style="cursor:pointer;">
+                <strong>Level 2: Daily Life</strong>
+                <p>Greetings & Common Phrases</p>
+                <div class="progress">
+                    <div class="progress-fill" id="progress2" style="width: 30%"></div>
+                </div>
+                <p>30% Complete</p>
+            </div>
+
+             
+            <div class="level-card" onclick="navigateTo('/advanced')" style="cursor:pointer;">
+                <strong>Level 3: Advanced</strong>
+                <p>Emergency, Medical, Travel & More</p>
+                <div class="progress">
+                    <div class="progress-fill" id="progress3" style="width: 10%"></div>
+                </div>
+                <p>10% Complete</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CHAT BUTTON ===== -->
+    <div id="chatButton" onclick="toggleChat()">
+        <i class="fa-solid fa-robot"></i>
+    </div>
+
+    <!-- ===== CHAT WINDOW ===== -->
+    <div id="chatContainer">
+        <div class="chat-header">
+            Ishario AI Tutor
+            <span class="ai-tag">AI Assistant</span>
+            <span onclick="toggleChat()" class="close-btn">✖</span>
+        </div>
+
+        <div id="chatMessages" class="chat-messages">
+            <div class="bot-message">
+                👋 Hello! I'm your <b>Ishario AI Assistant</b>.<br>
+                Ask me anything about learning sign language or using the platform.
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <input id="userInput" type="text" placeholder="Ask something...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script>
+        // ===== NAVIGATION =====
+        function navigateTo(route) {
+            window.location.href = route;
+        }
+
+        // ===== CHAT FUNCTIONALITY =====
+        function toggleChat() {
+            const chat = document.getElementById('chatContainer');
+            chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+
+            if (text === '') return;
+
+            const chat = document.getElementById('chatMessages');
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'user-message';
+            userMsg.innerText = text;
+
+            chat.appendChild(userMsg);
+            input.value = '';
+
+            showTyping();
+            botReply(text);
+            scrollChat();
+        }
+
+        function showTyping() {
+            const typing = document.createElement('div');
+            typing.className = 'typing';
+            typing.id = 'typing';
+            typing.innerText = 'AI Assistant typing...';
+
+            document.getElementById('chatMessages').appendChild(typing);
+        }
+
+        function botReply(text) {
+            text = text.toLowerCase();
+            let reply = '';
+
+            if (text.includes('hello') || text.includes('hi')) {
+                reply = 'Hello! 😊 How can I assist you with learning sign language today?';
+            } else if (text.includes('learn')) {
+                reply = 'You can start learning from Level 1 Basics in your learning path.';
+            } else if (text.includes('practice')) {
+                reply = 'Use the Live Interaction feature to practice signs with your webcam.';
+            } else if (text.includes('thank')) {
+                reply = 'The sign for Thank You is moving your hand outward from your chin.';
+            } else if (text.includes('video')) {
+                reply = 'Check the Video Lectures section for sign language tutorials.';
+            } else if (text.includes('game')) {
+                reply = 'You can practice using the Games section for interactive learning.';
+            } else {
+                reply = 'I\'m here to help you learn sign language using Ishario.';
+            }
+
+            setTimeout(() => {
+                const typing = document.getElementById('typing');
+                if (typing) typing.remove();
+
+                const botMsg = document.createElement('div');
+                botMsg.className = 'bot-message';
+                botMsg.innerText = reply;
+
+                document.getElementById('chatMessages').appendChild(botMsg);
+                scrollChat();
+            }, 900);
+        }
+
+        function scrollChat() {
+            const chat = document.getElementById('chatMessages');
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // ===== PAGE INITIALIZATION =====
+        window.addEventListener('load', () => {
+            // Fetch user data or set default
+            const userName = localStorage.getItem('userName') || 'User';
+            document.getElementById('userName').textContent = userName;
+        });
+    </script>
+</body>
+</html>
+
+  

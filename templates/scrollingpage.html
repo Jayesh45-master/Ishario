@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishario - Master Sign Language</title>
+    <!-- Tailwind CSS CDN for modern styling and layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* General Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f8fc; /* Very light background for white sections */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1, h2, h3 {
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subheading {
+            text-align: center;
+            color: #666;
+            margin-bottom: 50px;
+        }
+        
+        /* New Gradient Text Style for Logo */
+        .main-gradient-text {
+            background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- BUTTON STYLES --- */
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section Buttons */
+        .btn-free {
+            background-color: #fff;
+            color: #8a2be2; /* Violet/Purple */
+            border: none;
+            margin-right: 15px;
+        }
+
+        .btn-signin {
+            background-color: transparent;
+            color: #fff;
+            border: 2px solid #fff;
+        }
+
+        /* CTA Footer Button */
+        .btn-learn-now {
+            background-color: #fff;
+            color: #8a2be2;
+            border: none;
+            padding: 15px 30px;
+        }
+
+        /* --- SECTION 1: Hero Section (Purple Gradient) --- */
+        .hero-section {
+            background: linear-gradient(135deg, #8a2be2, #9933ff, #cc66ff); /* Violet/Purple Gradient */
+            color: white;
+            text-align: center;
+            padding: 150px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh; /* Make it full screen height */
+            padding-top: 80px; /* Adjust for fixed nav bar */
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .hand-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: inline-flex;
+            padding: 15px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .hero-section h1 {
+            font-size: 3.5rem;
+            margin-bottom: 5px;
+            text-transform: capitalize;
+        }
+
+        .hero-section .subtitle {
+            font-size: 2.5rem;
+            font-weight: 400;
+            opacity: 0.8;
+            margin-bottom: 25px;
+        }
+
+        .hero-section .description {
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* --- SECTION 2: Features Grid (Why Choose) --- */
+        .features-section {
+            padding: 80px 0;
+            background-color: #fdfdff; /* Slightly whiter background */
+            border-bottom: 1px solid #eee;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            text-align: left;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card h3 {
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        /* Icon Styling */
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .icon-box.purple { background-color: #8a2be2; }
+        .icon-box.green { background-color: #28a745; }
+        .icon-box.blue { background-color: #007bff; }
+        .icon-box.orange { background-color: #fd7e14; }
+        .icon-box.violet { background-color: #9370DB; }
+        .icon-box.dark-green { background-color: #1e8449; }
+
+        /* --- SECTION 3: Learning Journey (Levels) --- */
+        .journey-section {
+            padding: 80px 0;
+            background-color: #f8f8fc;
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .level-card {
+            background-color: white;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            border-top: 5px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .level-card:nth-child(1) { border-color: #28a745; }
+        .level-card:nth-child(2) { border-color: #007bff; }
+        .level-card:nth-child(3) { border-color: #8a2be2; }
+
+        .level-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .level-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .green-text { color: #28a745; }
+        .blue-text { color: #007bff; }
+        .purple-text { color: #8a2be2; }
+
+        .level-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        .level-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .level-card li {
+            padding: 8px 0;
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        .level-card li i {
+            color: #8a2be2; /* Checkmark color */
+            margin-right: 10px;
+        }
+
+        /* --- SECTION 4: CTA Footer (Purple Bar) --- */
+        .cta-footer {
+            background: linear-gradient(90deg, #8a2be2, #cc66ff); /* Horizontal Purple Gradient */
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .cta-footer h2 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .cta-footer p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        /* --- RESPONSIVENESS --- */
+        @media (max-width: 992px) {
+            .levels-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero-section h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-section .subtitle {
+                font-size: 1.8rem;
+            }
+
+            .cta-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .btn-free {
+                margin-right: 0;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NEW NAVIGATION BAR (Only Ishario Logo Remains) -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-start h-16 items-center">
+                <!-- Ishario Logo and Name -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="#" class="text-3xl font-extrabold main-gradient-text">
+                        <i class="fas fa-book-open mr-2"></i> <!-- Suitable Logo: Open Book -->
+                        Ishario
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content starts here -->
+    <header class="hero-section">
+        <div class="hero-content">
+            <div class="hand-icon"><i class="fas fa-hand-paper"></i></div>
+            <h1>Master Sign Language</h1>
+            <p class="subtitle">One Sign at a Time</p>
+            <p class="description">Interactive learning platform with gamification, daily challenges, and structured paths from beginner to advanced.</p>
+            <div class="cta-buttons">
+                <a href="singinpage.html" class="btn btn-free">Get Started Free ✨</a>
+                <a href="singinpage.html" class="btn btn-signin">Sign In</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="features-section">
+        <div class="container">
+            <!-- Project name updated here -->
+            <h2>Why Choose Ishario?</h2> 
+            <p class="subheading">Everything you need to become fluent in sign language</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon-box purple"><i class="fas fa-graduation-cap"></i></div>
+                    <h3>Structured Learning Paths</h3>
+                    <p>Progress from alphabets to advanced conversations with our carefully designed curriculum.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box green"><i class="fas fa-star"></i></div>
+                    <h3>Daily Challenges</h3>
+                    <p>Stay motivated with daily challenges and build consistent learning streaks.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box blue"><i class="fas fa-trophy"></i></div>
+                    <h3>Gamification</h3>
+                    <p>Earn badges, maintain streaks, and track your progress with visual heatmaps.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box orange"><i class="fas fa-book-open"></i></div>
+                    <h3>Rich Content Library</h3>
+                    <p>Access thousands of signs with images, GIFs, and example sentences.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box dark-green"><i class="fas fa-chart-line"></i></div>
+                    <h3>Progress Tracking</h3>
+                    <p>Visualize your learning journey with detailed analytics and insights.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="journey-section">
+        <div class="container">
+            <h2>Your Learning Journey</h2>
+            <p class="subheading">Progress through three carefully structured levels</p>
+
+            <div class="levels-grid">
+                <div class="level-card">
+                    <span class="level-number green-text">01</span>
+                    <h3 class="level-title">Beginner</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Alphabets & Numbers</li>
+                        <li><i class="fas fa-check"></i> Days of Week & Months</li>
+                        <li><i class="fas fa-check"></i> Basic Vocabulary</li>
+                    </ul>
+                </div>
+                <div class="level-card">
+                    <span class="level-number blue-text">02</span>
+                    <h3 class="level-title">Intermediate</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Greetings & Introductions</li>
+                        <li><i class="fas fa-check"></i> Daily Life Conversations</li>
+                        <li><i class="fas fa-check"></i> Common Phrases</li>
+                    </ul>
+                </div>
+                <div class="level-card">
+                    <span class="level-number purple-text">03</span>
+                    <h3 class="level-title">Advanced</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Emergency & Medical</li>
+                        <li><i class="fas fa-check"></i> Travel & Education</li>
+                        <li><i class="fas fa-check"></i> Professional Topics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="cta-footer">
+        <div class="container">
+            <h2>Ready to Start Your Journey?</h2>
+            <p>Join thousands of learners and start mastering sign language today.</p>
+            <a href="singinpage.html" class="btn btn-learn-now">Start Learning Now <i class="fas fa-arrow-right"></i></a>
+            <!-- NEW COPYRIGHT LINE ADDED HERE -->
+            <p class="mt-8 text-sm opacity-80">© 2025 Ishario. Empowering communication through sign language.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ishario - Game Arcade</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8f8fc;
+      min-height: 100vh;
+    }
+    .main-gradient-text {
+      background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .game-card {
+      background-color: white;
+      border: 1px solid #e5e7eb;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .game-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border-color: #a78bfa;
+    }
+    .cta-button {
+      background-image: linear-gradient(90deg, #8a2be2, #cc66ff);
+      box-shadow: 0 4px 6px rgba(138, 43, 226, 0.3);
+    }
+  </style>
+</head>
+
+<body class="flex flex-col">
+
+  <!-- Navigation Function -->
+  <script>
+    function navigateTo(page) {
+      window.location.href = `/${page}`;
+    }
+  </script>
+
+  <!-- Top Navigation Bar -->
+  <nav class="bg-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <div class="flex-shrink-0 flex items-center">
+          <button onclick="navigateTo('dashboard')" class="text-2xl font-bold main-gradient-text">
+            <i class="fas fa-book-open mr-2"></i> Ishario
+          </button>
+        </div>
+
+        <div class="flex items-center space-x-4 text-xl text-gray-400">
+          <button onclick="navigateTo('dashboard')" class="text-sm font-semibold text-gray-600 hover:text-purple-600 transition duration-150">
+            <i class="fas fa-arrow-left mr-1"></i> Dashboard
+          </button>
+          <div class="flex items-center space-x-4 text-xl text-gray-400">
+          <i class="fas fa-user-circle cursor-pointer hover:text-purple-600" onclick="navigateTo('profile')"></i>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex-grow">
+
+    <h1 class="text-3xl font-extrabold text-gray-800 mb-2">
+      Ishario Game Arcade 🎮
+    </h1>
+    <p class="text-gray-500 mb-8">Test your sign language knowledge and build muscle memory with these fun, interactive games.</p>
+
+    <!-- Games Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+      <!-- Game 1 -->
+      <div class="game-card p-6 rounded-xl shadow-md" onclick="navigateTo('sign_match')">
+        <div class="flex items-center space-x-4 mb-4">
+          <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl">
+            <i class="fas fa-dice"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Sign Match Challenge</h3>
+        </div>
+        <p class="text-gray-500 mb-4 text-sm">Match the written word to the correct sign image. Perfect for vocabulary testing.</p>
+        <div class="bg-gray-100 p-3 rounded-lg text-sm font-semibold text-gray-700 mb-4">
+          Focus: Level 1 & 2 Vocabulary
+        </div>
+        <button class="w-full py-2 rounded-lg text-white font-semibold cta-button hover:shadow-lg transition duration-150">
+          Play Now <i class="fas fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+
+
+      <!-- Game 3 -->
+      <div class="game-card p-6 rounded-xl shadow-md" onclick="navigateTo('speed_sign')">
+        <div class="flex items-center space-x-4 mb-4">
+          <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-2xl">
+            <i class="fas fa-clock"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Speed Sign Recognition</h3>
+        </div>
+        <p class="text-gray-500 mb-4 text-sm">Identify the sign instantly before the timer runs out. Tests reaction time and fluency.</p>
+        <div class="bg-gray-100 p-3 rounded-lg text-sm font-semibold text-gray-700 mb-4">
+          Focus: Fluency & Speed
+        </div>
+        <button class="w-full py-2 rounded-lg text-white font-semibold cta-button hover:shadow-lg transition duration-150">
+          Play Now <i class="fas fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+
+      <!-- Game 4 -->
+      <div class="game-card p-6 rounded-xl shadow-md" onclick="navigateTo('themed_quiz')">
+        <div class="flex items-center space-x-4 mb-4">
+          <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-2xl">
+            <i class="fas fa-puzzle-piece"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Themed Vocabulary Quiz</h3>
+        </div>
+        <p class="text-gray-500 mb-4 text-sm">Specialized quizzes covering Medical, Travel, or Education sign vocabulary (Level 3).</p>
+        <div class="bg-gray-100 p-3 rounded-lg text-sm font-semibold text-gray-700 mb-4">
+          Focus: Advanced Themed Content
+        </div>
+        <button class="w-full py-2 rounded-lg text-white font-semibold cta-button hover:shadow-lg transition duration-150">
+          Play Now <i class="fas fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
